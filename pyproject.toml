@@ -33,7 +33,7 @@ build-backend = "poetry.core.masonry.api"
 lint = "poetry run pre-commit run --all-files"
 
 test = "poetry run pytest"
-test-ci = "poetry run poe test --cov=coctails_api"
+test-ci = "poetry run poe test --cov=coctails_api --cov-report=xml"
 test-cov = "poetry run poe test --cov=coctails_api --cov-report=term-missing --cov-report=html"
 
 update-deps = "poetry update"
