@@ -5,11 +5,65 @@ description = ""
 authors = ["Dmitry Erlikh <derlih@gmail.com>"]
 readme = "README.md"
 packages = [{ include = "coctails_api" }]
+exclude = ["**/*_test.py", "**/conftest.py"]
+
 
 [tool.poetry.dependencies]
 python = "^3.12"
+fastapi = "^0.104.1"
+uvicorn = { extras = ["standard"], version = "^0.24.0.post1" }
+
+
+[tool.poetry.group.dev.dependencies]
+poethepoet = "^0.24.3"
+pre-commit = "^3.5.0"
+
+httpx = "^0.25.1"
+pytest = "^7.4.3"
+pytest-asyncio = "^0.21.1"
+pytest-cov = "^4.1.0"
 
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+
+[tool.poe.tasks]
+lint = "poetry run pre-commit run --all-files"
+test = "poetry run pytest"
+test-cov = "poetry poe test --cov=coctails_api --cov-report=term-missing --cov-report=html"
+
+update-deps = "poetry update"
+update-linters = "poetry run pre-commit autoupdate"
+
+
+[tool.pytest.ini_options]
+python_files = "*_test.py"
+asyncio_mode = "auto"
+log_cli = false
+
+
+[tool.black]
+preview = true
+
+
+[tool.ruff]
+line-length = 88
+
+
+[tool.isort]
+profile = "black"
+
+
+[tool.mypy]
+exclude = "(.*_test|conftest)\\.py$"
+strict = true
+
+
+[tool.coverage.run]
+omit = ["*_test.py", "*/conftest.py"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = ["\\.\\.\\."]
