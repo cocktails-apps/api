@@ -31,7 +31,9 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poe.tasks]
 lint = "poetry run pre-commit run --all-files"
+
 test = "poetry run pytest"
+test-ci = "poetry poe test --cov=coctails_api"
 test-cov = "poetry poe test --cov=coctails_api --cov-report=term-missing --cov-report=html"
 
 update-deps = "poetry update"
