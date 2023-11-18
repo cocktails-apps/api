@@ -1,6 +1,8 @@
 name: CI
 on:
   pull_request:
+    branches:
+      - main
 
   push:
     branches:
@@ -19,6 +21,9 @@ jobs:
 
       - name: Install poetry
         uses: abatilo/actions-poetry@v2
+
+      - name: Install poetry plugins
+        run: poetry self add poetry-plugin-export
 
       - uses: actions/cache@v3
         name: Cache deps
