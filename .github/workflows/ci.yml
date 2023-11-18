@@ -24,6 +24,11 @@ jobs:
       - name: Install the project dependencies
         run: poetry install
 
+      - uses: actions/cache@v3
+        with:
+          path: ~/.cache/pre-commit/
+          key: pre-commit-4|${{ env.pythonLocation }}|${{ hashFiles('.pre-commit-config.yaml') }}
+
       - name: Run linters
         run: poetry run poe lint
 
