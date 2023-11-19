@@ -45,6 +45,17 @@ jobs:
       - name: Run the automated tests
         run: poetry run poe test-ci
 
+      - name: Export dependencies to requirements.txt
+        run: |
+          poetry export --without-hashes --output requirements.txt
+
+          if [[ git status --porcelain --untracked-files=no ]]; then
+            git config user.name "GitHub Actions Bot"
+            git config user.email "<>"
+            git commit -am "Update requirements.txt"
+            git push
+          fi
+
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         env:
