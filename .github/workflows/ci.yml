@@ -11,8 +11,6 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
 
     steps:
       - uses: actions/checkout@v3
@@ -56,6 +54,7 @@ jobs:
         with:
           commit_message: Update requirements.txt
           file_pattern: requirements.txt
+          token: ${{ secrets.CI_TOKEN }}
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
