@@ -1,0 +1,14 @@
+{
+    "builds": [
+        {
+            "src": "coctails_api/app.py",
+            "use": "@vercel/python"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/(.*)",
+            "dest": "coctails_api/main.py"
+        }
+    ]
+}
