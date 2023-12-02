@@ -53,12 +53,6 @@ bump-patch = "poetry version --next-phase patch"
 bump-minor = "poetry version --next-phase minor"
 bump-major = "poetry version --next-phase major"
 
-generate-pipfile = [
-    { cmd = "poetry export --without-hashes --output requirements.txt" },
-    { cmd = "pipenv lock" },
-    { cmd = "rm requirements.txt" },
-]
-
 
 [tool.pytest.ini_options]
 python_files = "*_test.py"

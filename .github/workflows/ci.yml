@@ -50,7 +50,9 @@ jobs:
         run: poetry run poe test-ci
 
       - name: Export dependencies to Pipfile
-        run: poetry run poe generate-pipfile
+        run: |
+          poetry export --without-hashes --output requirements.txt
+          pipenv lock
 
       - name: Commit Pipfile
         uses: stefanzweifel/git-auto-commit-action@v5
