@@ -4,7 +4,7 @@ version = "0.1.0"
 description = ""
 authors = ["Dmitry Erlikh <derlih@gmail.com>"]
 readme = "README.md"
-packages = [{ include = "coctails_api" }]
+packages = [{ include = "api" }]
 exclude = ["**/*_test.py", "**/conftest.py"]
 
 

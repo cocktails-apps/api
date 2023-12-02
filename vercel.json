@@ -1,13 +1,13 @@
 {
     "functions": {
-        "coctails_api/app.py": {
-            "runtime": "python3.9"
+        "api/app.py": {
+            "maxDuration": 5
         }
     },
     "routes": [
         {
-            "src": "(.*)",
-            "dest": "coctails_api/app.py"
+            "src": "/(.*)",
+            "dest": "api/app.py"
         }
     ]
 }
