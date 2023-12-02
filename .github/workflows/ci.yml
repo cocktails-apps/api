@@ -20,7 +20,8 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9'
+          # Must be in sync with pyproject.toml
+          python-version: '3.11'
 
       - name: Install poetry
         uses: abatilo/actions-poetry@v2
@@ -48,14 +49,14 @@ jobs:
       - name: Run the automated tests
         run: poetry run poe test-ci
 
-      - name: Export dependencies to requirements.txt
-        run: poetry export --without-hashes --output requirements.txt
+      - name: Export dependencies to Pipfile
+        run: poetry run poe generate-pipfile
 
-      - name: Commit requirements.txt
+      - name: Commit Pipfile
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: Update requirements.txt
-          file_pattern: requirements.txt
+          commit_message: Update Pipfile
+          file_pattern: Pipfile*
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
