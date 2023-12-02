@@ -16,6 +16,7 @@ def app(app: FastAPI, storage: Storage) -> FastAPI:
 def test_get(client: TestClient, storage: Storage) -> None:
     storage.get_coctails.return_value = [
         Coctail(
+            id="1",
             name="screwdriver",
             description="Cool coctail",
             ingredients=[],
