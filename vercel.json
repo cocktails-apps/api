@@ -1,14 +1,13 @@
 {
-    "builds": [
-        {
-            "src": "coctails_api/app.py",
-            "use": "@vercel/python"
+    "functions": {
+        "api/app.py": {
+            "maxDuration": 5
         }
-    ],
+    },
     "routes": [
         {
             "src": "/(.*)",
-            "dest": "coctails_api/main.py"
+            "dest": "api/app.py"
         }
     ]
 }

@@ -4,12 +4,12 @@ version = "0.1.0"
 description = ""
 authors = ["Dmitry Erlikh <derlih@gmail.com>"]
 readme = "README.md"
-packages = [{ include = "coctails_api" }]
+packages = [{ include = "api" }]
 exclude = ["**/*_test.py", "**/conftest.py"]
 
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "~3.9"
 fastapi = "^0.104.1"
 uvicorn = { extras = ["standard"], version = "^0.24.0.post1" }
 
@@ -30,6 +30,8 @@ build-backend = "poetry.core.masonry.api"
 
 
 [tool.poe.tasks]
+run = "poetry run python ./main.py"
+
 lint = "poetry run pre-commit run --all-files"
 
 test = "poetry run pytest"
