@@ -1,20 +1,13 @@
 from fastapi import APIRouter, FastAPI
-from pydantic import BaseModel
+
+from ..storage import Coctail, Storage
 
 
-class Coctail(BaseModel):
-    name: str
-    description: str
-
-
-Coctails = list[Coctail]
-
-
-def register_coctails_routes(app: FastAPI) -> None:
+def register_coctails_routes(app: FastAPI, storage: Storage) -> None:
     router = APIRouter(prefix="/coctails")
 
     @router.get("/")
-    def get() -> Coctails:
-        return [Coctail(name="screwdriver", description="Cool coctail.")]
+    async def get() -> list[Coctail]:
+        return await storage.get_coctails()
 
     app.include_router(router)
