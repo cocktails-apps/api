@@ -3,6 +3,7 @@ from typing import AsyncIterator
 
 from fastapi import FastAPI
 
+from .app_state import AppState
 from .routes import (
     register_coctails_routes,
     register_glasses_routes,
@@ -13,10 +14,8 @@ from .storage import get_storage
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    app.state.storage = get_storage()
-
-    yield
+async def lifespan(app: FastAPI) -> AsyncIterator[AppState]:
+    yield {"storage": get_storage()}
 
 
 app = FastAPI(lifespan=lifespan)
