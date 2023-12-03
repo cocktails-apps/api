@@ -1,5 +1,3 @@
-from unittest.mock import create_autospec
-
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -7,11 +5,6 @@ from pydantic import TypeAdapter
 
 from ..storage import Ingridient, IngridientWithoutId, Storage
 from .ingridients import register_ingridients_routes
-
-
-@pytest.fixture
-def storage() -> Storage:
-    return create_autospec(Storage, spec_set=True, instance=True)
 
 
 @pytest.fixture
