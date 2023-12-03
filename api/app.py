@@ -1,3 +1,6 @@
+from contextlib import asynccontextmanager
+from typing import AsyncIterator
+
 from fastapi import FastAPI
 
 from .routes import (
@@ -8,10 +11,16 @@ from .routes import (
 )
 from .storage import get_storage
 
-app = FastAPI()
-storage = get_storage()
 
-register_info_routes(app)
-register_coctails_routes(app, storage)
-register_glasses_routes(app, storage)
-register_ingridients_routes(app, storage)
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    storage = get_storage()
+    register_info_routes(app)
+    register_coctails_routes(app, storage)
+    register_glasses_routes(app, storage)
+    register_ingridients_routes(app, storage)
+
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
