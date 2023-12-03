@@ -20,6 +20,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v4
         with:
+          # Must be in sync with pyproject.toml
           python-version: '3.9'
 
       - name: Install poetry

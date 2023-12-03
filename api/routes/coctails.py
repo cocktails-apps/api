@@ -1,20 +1,23 @@
+from http import HTTPStatus
+
 from fastapi import APIRouter, FastAPI
-from pydantic import BaseModel
+from fastapi.exceptions import HTTPException
 
-
-class Coctail(BaseModel):
-    name: str
-    description: str
-
-
-Coctails = list[Coctail]
+from ..storage import Coctail, CoctailPartialWithoutId, DocumentNotFound, get_storage
 
 
 def register_coctails_routes(app: FastAPI) -> None:
-    router = APIRouter(prefix="/coctails")
+    router = APIRouter(prefix="/coctails", tags=["coctails"])
 
     @router.get("/")
-    def get() -> Coctails:
-        return [Coctail(name="screwdriver", description="Cool coctail.")]
+    async def get_all() -> list[Coctail]:
+        return await get_storage().get_coctails()
+
+    @router.post("/")
+    async def create(coctail: CoctailPartialWithoutId) -> Coctail:
+        try:
+            return await get_storage().save_coctail(coctail)
+        except DocumentNotFound:
+            raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
 
     app.include_router(router)

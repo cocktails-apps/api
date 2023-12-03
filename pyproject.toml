@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "coctails-api"
-version = "0.1.0"
+version = "0.2.0"
 description = ""
 authors = ["Dmitry Erlikh <derlih@gmail.com>"]
 readme = "README.md"
@@ -9,19 +9,34 @@ exclude = ["**/*_test.py", "**/conftest.py"]
 
 
 [tool.poetry.dependencies]
+# Must be in sync with version used in CI
 python = "~3.9"
+
 fastapi = "^0.104.1"
-uvicorn = { extras = ["standard"], version = "^0.24.0.post1" }
+pyhumps = "^3.8.0"
+motor = "^3.3.2"
 
 
 [tool.poetry.group.dev.dependencies]
+# CI tooling
 poethepoet = "^0.24.3"
-pre-commit = "^3.5.0"
+pipenv = "^2023.11.15"
 
+# Linters
+pre-commit = "^3.5.0"
+mypy = "^1.7.1"
+motor-types = "^1.0.0b3"
+
+# Local run
+uvicorn = { extras = ["standard"], version = "^0.24.0.post1" }
+
+# Tests
 httpx = "^0.25.1"
 pytest = "^7.4.3"
 pytest-asyncio = "^0.21.1"
 pytest-cov = "^4.1.0"
+
+mongomock-motor = "^0.0.21"
 
 
 [build-system]
@@ -30,16 +45,23 @@ build-backend = "poetry.core.masonry.api"
 
 
 [tool.poe.tasks]
-run = "poetry run python ./main.py"
+run = { shell = "USE_MONGOMOCK=1 poetry run python ./main.py" }
 
-lint = "poetry run pre-commit run --all-files"
+lint = [
+    { shell = "poetry run pre-commit run --all-files || poetry run pre-commit run --all-files" },
+    { cmd = "mypy --install-types --non-interactive ." },
+]
 
 test = "poetry run pytest"
-test-ci = "poetry run poe test --cov=coctails_api --cov-report=xml"
-test-cov = "poetry run poe test --cov=coctails_api --cov-report=term-missing --cov-report=html"
+test-ci = "poetry run poe test --cov=api --cov-report=xml"
+test-cov = "poetry run poe test --cov=api --cov-report=term-missing --cov-report=html"
 
 update-deps = "poetry update"
 update-linters = "poetry run pre-commit autoupdate"
+
+bump-patch = "poetry version --next-phase patch"
+bump-minor = "poetry version --next-phase minor"
+bump-major = "poetry version --next-phase major"
 
 
 [tool.pytest.ini_options]
