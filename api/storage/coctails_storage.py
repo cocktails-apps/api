@@ -47,7 +47,7 @@ class CoctailsStorage:
 
         res = await self._collection.insert_one(add_metadata(doc))
         return CoctailPartial(
-            id=str(res.inserted_id),
+            id=CoctailId(str(res.inserted_id)),
             name=coctail.name,
             description=coctail.description,
             ingridients=coctail.ingridients,
@@ -59,6 +59,7 @@ class CoctailsStorage:
         if res is None:
             raise DocumentNotFound(f"Coctail with {id=} not found")
 
+        res = dict(res)
         res["id"] = str(res["_id"])
         res["ingridients"] = [
             dict(id=str(ingridient["id"]), amount=ingridient["amount"])

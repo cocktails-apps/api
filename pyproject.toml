@@ -25,6 +25,7 @@ pipenv = "^2023.11.15"
 # Linters
 pre-commit = "^3.5.0"
 mypy = "^1.7.1"
+motor-types = "^1.0.0b3"
 
 # Local run
 uvicorn = { extras = ["standard"], version = "^0.24.0.post1" }
@@ -47,7 +48,7 @@ build-backend = "poetry.core.masonry.api"
 run = "poetry run python ./main.py"
 
 lint = [
-    { cmd = "poetry run pre-commit run --all-files || poetry run pre-commit run --all-files" },
+    { shell = "poetry run pre-commit run --all-files || poetry run pre-commit run --all-files" },
     { cmd = "mypy --install-types --non-interactive ." },
 ]
 

@@ -29,7 +29,7 @@ class IngridientsStorage:
             add_metadata(ingridient.model_dump(by_alias=True))
         )
         return Ingridient(
-            id=str(res.inserted_id),
+            id=IngridientId(str(res.inserted_id)),
             name=ingridient.name,
             description=ingridient.description,
         )
@@ -39,5 +39,6 @@ class IngridientsStorage:
         if res is None:
             raise DocumentNotFound(f"Ingridient with {id=} not found")
 
+        res = dict(res)
         res["id"] = str(res["_id"])
         return Ingridient.model_validate(res)

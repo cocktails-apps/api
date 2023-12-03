@@ -29,7 +29,7 @@ class GlassStorage:
             add_metadata(glass.model_dump(by_alias=True))
         )
         return Glass(
-            id=str(res.inserted_id),
+            id=GlassId(str(res.inserted_id)),
             name=glass.name,
             description=glass.description,
         )
@@ -39,5 +39,6 @@ class GlassStorage:
         if res is None:
             raise DocumentNotFound(f"Glass with {id=} not found")
 
+        res = dict(res)
         res["id"] = str(res["_id"])
         return Glass.model_validate(res)
