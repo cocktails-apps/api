@@ -4,7 +4,7 @@ from ..storage import Glass, GlassWithoutId, Storage
 
 
 def register_glasses_routes(app: FastAPI, storage: Storage) -> None:
-    router = APIRouter(prefix="/glasses")
+    router = APIRouter(prefix="/glasses", tags=["glasses"])
 
     @router.get("/")
     async def get_all() -> list[Glass]:
