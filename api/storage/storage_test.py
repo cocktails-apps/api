@@ -77,6 +77,14 @@ async def test_get_ingridient_by_id(
     ingridients_storage.get_by_id.assert_called_once()
 
 
+async def test_get_ingridients(
+    sut: Storage, ingridients_storage: IngridientsStorage, ingridient: Ingridient
+) -> None:
+    ingridients_storage.get_all.return_value = [ingridient]
+    assert await sut.get_ingridients() == [ingridient]
+    ingridients_storage.get_all.assert_called_once()
+
+
 async def test_save_glass(
     sut: Storage, glass_storage: GlassesStorage, glass: Glass
 ) -> None:

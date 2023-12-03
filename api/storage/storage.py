@@ -50,6 +50,9 @@ class Storage:
     async def get_ingridient_by_id(self, ingridient_id: IngridientId) -> Ingridient:
         return await self._ingridients_storage.get_by_id(ingridient_id)
 
+    async def get_ingridients(self) -> list[Ingridient]:
+        return await self._ingridients_storage.get_all()
+
     async def save_glass(self, glass: GlassWithoutId) -> Glass:
         return await self._glasses_storage.save(glass)
 
