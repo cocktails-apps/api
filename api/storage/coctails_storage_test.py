@@ -25,14 +25,14 @@ async def test_save_get(sut: CoctailsStorage):
     upload = CoctailPartialWithoutId(
         name="test name",
         description="test description",
-        ingridients=[
+        ingridients=set([
             CoctailIngridientPartial(id=str(ObjectId()), amount=50),
             CoctailIngridientPartial(id=str(ObjectId()), amount=100),
-        ],
-        glasses=[
+        ]),
+        glasses=set([
             CoctailGlassPartial(id=str(ObjectId())),
             CoctailGlassPartial(id=str(ObjectId())),
-        ],
+        ]),
     )
     coctail = await sut.save(upload)
 

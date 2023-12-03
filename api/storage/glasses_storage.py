@@ -4,14 +4,14 @@ from typing import Any, NewType
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from .commons import ApiBaseModel, DocumentNotFound, add_metadata
+from .commons import ApiBaseModel, Description, DocumentNotFound, Name, add_metadata
 
 GlassId = NewType("GlassId", str)
 
 
 class GlassWithoutId(ApiBaseModel):
-    name: str
-    description: str
+    name: Name
+    description: Description
 
 
 class Glass(GlassWithoutId):

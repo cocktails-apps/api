@@ -1,9 +1,10 @@
-from typing import NewType
+from typing import Annotated, NewType
 
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
+from pydantic.types import confrozenset
 
-from .commons import ApiBaseModel, DocumentNotFound, add_metadata
+from .commons import ApiBaseModel, Description, DocumentNotFound, Name, add_metadata
 from .glasses_storage import GlassId
 from .ingridients_storage import IngridientId
 
@@ -20,10 +21,15 @@ class CoctailGlassPartial(ApiBaseModel):
 
 
 class CoctailPartialWithoutId(ApiBaseModel):
-    name: str
-    description: str
-    ingridients: list[CoctailIngridientPartial]
-    glasses: list[CoctailGlassPartial]
+    name: Name
+    description: Description
+    ingridients: Annotated[
+        frozenset[CoctailIngridientPartial],
+        confrozenset(CoctailIngridientPartial, min_length=1),
+    ]
+    glasses: Annotated[
+        frozenset[CoctailGlassPartial], confrozenset(CoctailGlassPartial, min_length=1)
+    ]
 
 
 class CoctailPartial(CoctailPartialWithoutId):
@@ -38,7 +44,7 @@ class CoctailsStorage:
         self._collection = db[COCTAILS_COLLECTION]
 
     async def save(self, coctail: CoctailPartialWithoutId) -> CoctailPartial:
-        doc = coctail.model_dump(by_alias=True)
+        doc = coctail.model_dump(by_alias=True, mode="json")
 
         for ing in doc["ingridients"]:
             ing["id"] = ObjectId(ing["id"])

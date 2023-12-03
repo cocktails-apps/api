@@ -1,6 +1,9 @@
 import asyncio
 from collections.abc import Iterable
 from functools import cache
+from typing import Annotated
+
+from pydantic.types import PositiveInt, confrozenset
 
 from .client import get_client
 from .coctails_storage import (
@@ -9,7 +12,7 @@ from .coctails_storage import (
     CoctailPartialWithoutId,
     CoctailsStorage,
 )
-from .commons import ApiBaseModel, DocumentNotFound
+from .commons import ApiBaseModel, Description, DocumentNotFound, Name
 from .glasses_storage import Glass, GlassesStorage, GlassId, GlassWithoutId
 from .ingridients_storage import (
     Ingridient,
@@ -22,15 +25,17 @@ DB_NAME = "coctails"
 
 
 class CoctailIngridient(Ingridient):
-    amount: int
+    amount: PositiveInt
 
 
 class Coctail(ApiBaseModel):
     id: CoctailId
-    name: str
-    description: str
-    ingridients: list[CoctailIngridient]
-    glasses: list[Glass]
+    name: Name
+    description: Description
+    ingridients: Annotated[
+        frozenset[CoctailIngridient], confrozenset(CoctailIngridient, min_length=1)
+    ]
+    glasses: Annotated[frozenset[Glass], confrozenset(Glass, min_length=1)]
 
 
 class Storage:
@@ -84,7 +89,7 @@ class Storage:
             ingridients=self._get_ingridients_from_tasks(
                 zip(coctail.ingridients, ingridient_tasks, strict=True)
             ),
-            glasses=[glass_task.result() for glass_task in glass_tasks],
+            glasses=frozenset(glass_task.result() for glass_task in glass_tasks),
         )
 
     async def get_coctail_by_id(self, coctail_id: CoctailId) -> Coctail:
@@ -112,7 +117,7 @@ class Storage:
             ingridients=self._get_ingridients_from_tasks(
                 zip(coctail.ingridients, ingridient_tasks, strict=True)
             ),
-            glasses=[glass_task.result() for glass_task in glass_tasks],
+            glasses=frozenset(glass_task.result() for glass_task in glass_tasks),
         )
 
     async def get_coctails(self) -> list[Coctail]:
@@ -123,8 +128,8 @@ class Storage:
         ingridients: Iterable[
             tuple[CoctailIngridientPartial, asyncio.Task[Ingridient]]
         ],
-    ) -> list[CoctailIngridient]:
-        return [
+    ) -> frozenset[CoctailIngridient]:
+        return frozenset(
             CoctailIngridient(
                 id=ingridient_task.result().id,
                 name=ingridient_task.result().name,
@@ -132,7 +137,7 @@ class Storage:
                 amount=ingridient.amount,
             )
             for ingridient, ingridient_task in ingridients
-        ]
+        )
 
 
 @cache

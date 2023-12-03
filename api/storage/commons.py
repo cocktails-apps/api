@@ -1,9 +1,10 @@
 from datetime import datetime
-from typing import Any
+from typing import Annotated, Any
 
 import humps
 from bson import Timestamp
 from pydantic import BaseModel, ConfigDict
+from pydantic.types import StringConstraints
 
 
 class ApiBaseModel(BaseModel):
@@ -12,6 +13,12 @@ class ApiBaseModel(BaseModel):
         populate_by_name=True,
         frozen=True,
     )
+
+
+Name = Annotated[
+    str, StringConstraints(to_lower=True, strip_whitespace=True, min_length=1)
+]
+Description = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
 
 def add_metadata(doc: dict[str, Any]) -> dict[str, Any]:

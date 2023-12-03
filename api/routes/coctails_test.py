@@ -33,12 +33,13 @@ def test_get_all(client: TestClient, storage: Storage, coctail: Coctail) -> None
 
 async def test_create(client: TestClient, storage: Storage, coctail: Coctail) -> None:
     coctail_partial_without_id = CoctailPartialWithoutId.model_validate(
-        coctail.model_dump(by_alias=True)
+        coctail.model_dump(by_alias=True, mode="json")
     )
     storage.save_coctail.return_value = coctail
 
     resp = client.post(
-        "/coctails", json=coctail_partial_without_id.model_dump(by_alias=True)
+        "/coctails",
+        json=coctail_partial_without_id.model_dump(by_alias=True, mode="json"),
     )
     resp.raise_for_status()
 

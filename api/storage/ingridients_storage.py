@@ -3,14 +3,14 @@ from typing import Any, Mapping, NewType
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from .commons import ApiBaseModel, DocumentNotFound, add_metadata
+from .commons import ApiBaseModel, Description, DocumentNotFound, Name, add_metadata
 
 IngridientId = NewType("IngridientId", str)
 
 
 class IngridientWithoutId(ApiBaseModel):
-    name: str
-    description: str
+    name: Name
+    description: Description
 
 
 class Ingridient(IngridientWithoutId):
