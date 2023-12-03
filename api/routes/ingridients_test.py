@@ -20,11 +20,6 @@ def app(app: FastAPI, storage: Storage) -> FastAPI:
     return app
 
 
-@pytest.fixture
-def ingridient() -> Ingridient:
-    return Ingridient(id="1", name="Orange juice", description="Some description")
-
-
 def test_get_all(client: TestClient, storage: Storage, ingridient: Ingridient) -> None:
     storage.get_ingridients.return_value = [ingridient]
 

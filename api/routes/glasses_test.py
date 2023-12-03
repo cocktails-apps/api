@@ -20,11 +20,6 @@ def app(app: FastAPI, storage: Storage) -> FastAPI:
     return app
 
 
-@pytest.fixture
-def glass() -> Glass:
-    return Glass(id="1", name="highball", description="Some description")
-
-
 def test_get_all(client: TestClient, storage: Storage, glass: Glass) -> None:
     storage.get_glasses.return_value = [glass]
 
