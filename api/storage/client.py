@@ -1,11 +1,9 @@
 import os
-from functools import cache
 from typing import Optional
 
 from motor.motor_asyncio import AsyncIOMotorClient
 
 
-@cache
 def get_client() -> AsyncIOMotorClient:
     if os.environ.get("USE_MONGOMOCK", False):
         from mongomock_motor import AsyncMongoMockClient  # type: ignore[import-untyped]

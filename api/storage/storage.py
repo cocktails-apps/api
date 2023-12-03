@@ -1,6 +1,5 @@
 import asyncio
 from collections.abc import Iterable
-from functools import cache
 from typing import Annotated
 
 from pydantic.types import PositiveInt, confrozenset
@@ -149,7 +148,6 @@ class Storage:
         )
 
 
-@cache
 def get_storage() -> Storage:
     mongo_client = get_client()
     db = mongo_client[DB_NAME]
