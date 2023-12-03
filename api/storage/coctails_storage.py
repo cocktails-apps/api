@@ -1,4 +1,4 @@
-from typing import Annotated, NewType
+from typing import Annotated, Any, Mapping, NewType
 
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -65,11 +65,20 @@ class CoctailsStorage:
         if res is None:
             raise DocumentNotFound(f"Coctail with {id=} not found")
 
-        res = dict(res)
-        res["id"] = str(res["_id"])
-        res["ingridients"] = [
+        return self._parse_doc(res)
+
+    async def get_all(self) -> list[CoctailPartial]:
+        cur = self._collection.find()
+        return list(map(self._parse_doc, await cur.to_list(length=None)))
+
+    @staticmethod
+    def _parse_doc(doc: Mapping[str, Any]) -> CoctailPartial:
+        doc = dict(doc)
+        doc["id"] = str(doc["_id"])
+        doc["ingridients"] = [
             dict(id=str(ingridient["id"]), amount=ingridient["amount"])
-            for ingridient in res["ingridients"]
+            for ingridient in doc["ingridients"]
         ]
-        res["glasses"] = [dict(id=str(glass["id"])) for glass in res["glasses"]]
-        return CoctailPartial.model_validate(res)
+        doc["glasses"] = [dict(id=str(glass["id"])) for glass in doc["glasses"]]
+
+        return CoctailPartial.model_validate(doc)

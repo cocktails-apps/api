@@ -9,6 +9,7 @@ from .client import get_client
 from .coctails_storage import (
     CoctailId,
     CoctailIngridientPartial,
+    CoctailPartial,
     CoctailPartialWithoutId,
     CoctailsStorage,
 )
@@ -93,35 +94,16 @@ class Storage:
         )
 
     async def get_coctail_by_id(self, coctail_id: CoctailId) -> Coctail:
-        # TODO: consifer using MongoDB aggregation pipeline
+        coctail_partial = await self._coctails_storage.get_by_id(coctail_id)
 
-        coctail = await self._coctails_storage.get_by_id(coctail_id)
-
-        try:
-            async with asyncio.TaskGroup() as tg:
-                ingridient_tasks = [
-                    tg.create_task(self.get_ingridient_by_id(ingridient.id))
-                    for ingridient in coctail.ingridients
-                ]
-                glass_tasks = [
-                    tg.create_task(self.get_glass_by_id(glass.id))
-                    for glass in coctail.glasses
-                ]
-        except ExceptionGroup:
-            raise DocumentNotFound("Some of the parts not found")
-
-        return Coctail(
-            id=coctail_id,
-            name=coctail.name,
-            description=coctail.description,
-            ingridients=self._get_ingridients_from_tasks(
-                zip(coctail.ingridients, ingridient_tasks, strict=True)
-            ),
-            glasses=frozenset(glass_task.result() for glass_task in glass_tasks),
-        )
+        return await self._populate_partial_coctail(coctail_partial)
 
     async def get_coctails(self) -> list[Coctail]:
-        return []
+        coctails_partial = await self._coctails_storage.get_all()
+        return [
+            await self._populate_partial_coctail(coctail_partial)
+            for coctail_partial in coctails_partial
+        ]
 
     @staticmethod
     def _get_ingridients_from_tasks(
@@ -137,6 +119,33 @@ class Storage:
                 amount=ingridient.amount,
             )
             for ingridient, ingridient_task in ingridients
+        )
+
+    async def _populate_partial_coctail(
+        self, coctail_partial: CoctailPartial
+    ) -> Coctail:
+        # TODO: consifer using MongoDB aggregation pipeline
+        try:
+            async with asyncio.TaskGroup() as tg:
+                ingridient_tasks = [
+                    tg.create_task(self.get_ingridient_by_id(ingridient.id))
+                    for ingridient in coctail_partial.ingridients
+                ]
+                glass_tasks = [
+                    tg.create_task(self.get_glass_by_id(glass.id))
+                    for glass in coctail_partial.glasses
+                ]
+        except ExceptionGroup:
+            raise DocumentNotFound("Some of the parts not found")
+
+        return Coctail(
+            id=coctail_partial.id,
+            name=coctail_partial.name,
+            description=coctail_partial.description,
+            ingridients=self._get_ingridients_from_tasks(
+                zip(coctail_partial.ingridients, ingridient_tasks, strict=True)
+            ),
+            glasses=frozenset(glass_task.result() for glass_task in glass_tasks),
         )
 
 

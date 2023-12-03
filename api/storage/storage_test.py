@@ -156,3 +156,27 @@ async def test_get_coctail_by_id(
     assert len(result.ingridients) == len(coctail.ingridients)
     assert len(result.glasses) == len(coctail.glasses)
     coctails_storage.get_by_id.assert_called_once()
+
+
+async def test_get_coctails(
+    sut: Storage,
+    ingridients_storage: IngridientsStorage,
+    glass_storage: GlassesStorage,
+    coctails_storage: CoctailsStorage,
+    ingridient: Ingridient,
+    glass: Glass,
+    coctail: CoctailPartial,
+) -> None:
+    ingridients_storage.get_by_id.return_value = ingridient
+    glass_storage.get_by_id.return_value = glass
+    coctails_storage.get_all.return_value = [coctail]
+
+    result = await sut.get_coctails()
+
+    assert len(result) == 1
+    assert result[0].id == coctail.id
+    assert result[0].name == coctail.name
+    assert result[0].description == coctail.description
+    assert len(result[0].ingridients) == len(coctail.ingridients)
+    assert len(result[0].glasses) == len(coctail.glasses)
+    coctails_storage.get_all.assert_called_once()
