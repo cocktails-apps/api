@@ -1,5 +1,6 @@
 import os
 from functools import cache
+from typing import Optional
 
 from motor.motor_asyncio import AsyncIOMotorClient
 
@@ -10,7 +11,7 @@ def get_client() -> AsyncIOMotorClient:
     return AsyncIOMotorClient(os.environ["MONGODB_URI"])
 
 
-async def is_connected(mongo_client: AsyncIOMotorClient | None = None) -> bool:
+async def is_connected(mongo_client: Optional[AsyncIOMotorClient] = None) -> bool:
     if mongo_client is None:
         mongo_client = get_client()
 
