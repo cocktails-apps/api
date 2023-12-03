@@ -2,7 +2,7 @@ from typing import Annotated, Any, Mapping, NewType
 
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from pydantic.types import confrozenset
+from pydantic.types import PositiveInt, confrozenset
 
 from .commons import ApiBaseModel, Description, DocumentNotFound, Name, add_metadata
 from .glasses_storage import GlassId
@@ -13,7 +13,7 @@ CoctailId = NewType("CoctailId", str)
 
 class CoctailIngridientPartial(ApiBaseModel):
     id: IngridientId
-    amount: int
+    amount: PositiveInt
 
 
 class CoctailGlassPartial(ApiBaseModel):

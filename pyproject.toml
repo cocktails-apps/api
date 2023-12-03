@@ -10,7 +10,7 @@ exclude = ["**/*_test.py", "**/conftest.py"]
 
 [tool.poetry.dependencies]
 # Must be in sync with version used in CI
-python = "~3.11"
+python = "~3.9"
 
 fastapi = "^0.104.1"
 pyhumps = "^3.8.0"

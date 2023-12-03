@@ -6,13 +6,14 @@ from pydantic.types import PositiveInt, confrozenset
 
 from .client import get_client
 from .coctails_storage import (
+    CoctailGlassPartial,
     CoctailId,
     CoctailIngridientPartial,
     CoctailPartial,
     CoctailPartialWithoutId,
     CoctailsStorage,
 )
-from .commons import ApiBaseModel, Description, DocumentNotFound, Name
+from .commons import ApiBaseModel, Description, Name
 from .glasses_storage import Glass, GlassesStorage, GlassId, GlassWithoutId
 from .ingridients_storage import (
     Ingridient,
@@ -68,33 +69,20 @@ class Storage:
         return await self._glasses_storage.get_all()
 
     async def save_coctail(self, coctail: CoctailPartialWithoutId) -> Coctail:
-        try:
-            async with asyncio.TaskGroup() as tg:
-                ingridient_tasks = [
-                    tg.create_task(self.get_ingridient_by_id(ingridient.id))
-                    for ingridient in coctail.ingridients
-                ]
-                glass_tasks = [
-                    tg.create_task(self.get_glass_by_id(glass.id))
-                    for glass in coctail.glasses
-                ]
-        except ExceptionGroup:
-            raise DocumentNotFound("Some of the parts not found")
+        ingridients = await self._get_ingridients(list(coctail.ingridients))
+        glasses = await self._get_glasses(list(coctail.glasses))
 
         res = await self._coctails_storage.save(coctail)
         return Coctail(
             id=res.id,
             name=coctail.name,
             description=coctail.description,
-            ingridients=self._get_ingridients_from_tasks(
-                zip(coctail.ingridients, ingridient_tasks, strict=True)
-            ),
-            glasses=frozenset(glass_task.result() for glass_task in glass_tasks),
+            ingridients=ingridients,
+            glasses=glasses,
         )
 
     async def get_coctail_by_id(self, coctail_id: CoctailId) -> Coctail:
         coctail_partial = await self._coctails_storage.get_by_id(coctail_id)
-
         return await self._populate_partial_coctail(coctail_partial)
 
     async def get_coctails(self) -> list[Coctail]:
@@ -104,48 +92,42 @@ class Storage:
             for coctail_partial in coctails_partial
         ]
 
-    @staticmethod
-    def _get_ingridients_from_tasks(
-        ingridients: Iterable[
-            tuple[CoctailIngridientPartial, asyncio.Task[Ingridient]]
-        ],
-    ) -> frozenset[CoctailIngridient]:
-        return frozenset(
-            CoctailIngridient(
-                id=ingridient_task.result().id,
-                name=ingridient_task.result().name,
-                description=ingridient_task.result().description,
-                amount=ingridient.amount,
-            )
-            for ingridient, ingridient_task in ingridients
-        )
-
     async def _populate_partial_coctail(
         self, coctail_partial: CoctailPartial
     ) -> Coctail:
-        # TODO: consifer using MongoDB aggregation pipeline
-        try:
-            async with asyncio.TaskGroup() as tg:
-                ingridient_tasks = [
-                    tg.create_task(self.get_ingridient_by_id(ingridient.id))
-                    for ingridient in coctail_partial.ingridients
-                ]
-                glass_tasks = [
-                    tg.create_task(self.get_glass_by_id(glass.id))
-                    for glass in coctail_partial.glasses
-                ]
-        except ExceptionGroup:
-            raise DocumentNotFound("Some of the parts not found")
-
         return Coctail(
             id=coctail_partial.id,
             name=coctail_partial.name,
             description=coctail_partial.description,
-            ingridients=self._get_ingridients_from_tasks(
-                zip(coctail_partial.ingridients, ingridient_tasks, strict=True)
-            ),
-            glasses=frozenset(glass_task.result() for glass_task in glass_tasks),
+            ingridients=await self._get_ingridients(list(coctail_partial.ingridients)),
+            glasses=await self._get_glasses(list(coctail_partial.glasses)),
         )
+
+    async def _get_ingridients(
+        self, ingridients: list[CoctailIngridientPartial]
+    ) -> frozenset[CoctailIngridient]:
+        tasks = [self.get_ingridient_by_id(ingridient.id) for ingridient in ingridients]
+        populated_ingridients = await asyncio.gather(*tasks)
+
+        res: list[CoctailIngridient] = []
+        for ingridient, populated_ingridient in zip(ingridients, populated_ingridients):
+            res.append(
+                CoctailIngridient(
+                    id=populated_ingridient.id,
+                    name=populated_ingridient.name,
+                    description=populated_ingridient.description,
+                    amount=ingridient.amount,
+                )
+            )
+
+        return frozenset(res)
+
+    async def _get_glasses(
+        self, glasses: Iterable[CoctailGlassPartial]
+    ) -> frozenset[Glass]:
+        tasks = [self.get_glass_by_id(glass.id) for glass in glasses]
+        populated_glasses = await asyncio.gather(*tasks)
+        return frozenset(populated_glasses)
 
 
 def get_storage() -> Storage:
