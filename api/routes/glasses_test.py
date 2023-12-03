@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -8,9 +10,10 @@ from .glasses import register_glasses_routes
 
 
 @pytest.fixture
-def app(app: FastAPI) -> FastAPI:
+def app(app: FastAPI, storage: Storage) -> FastAPI:
     register_glasses_routes(app)
-    return app
+    with patch("api.routes.glasses.get_storage", return_value=storage):
+        yield app
 
 
 def test_get_all(client: TestClient, storage: Storage, glass: Glass) -> None:

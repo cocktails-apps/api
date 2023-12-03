@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -8,15 +10,16 @@ from .coctails import register_coctails_routes
 
 
 @pytest.fixture
-def app(app: FastAPI) -> FastAPI:
+def app(app: FastAPI, storage: Storage) -> FastAPI:
     register_coctails_routes(app)
-    return app
+    with patch("api.routes.coctails.get_storage", return_value=storage):
+        yield app
 
 
 def test_get_all(client: TestClient, storage: Storage, coctail: Coctail) -> None:
     storage.get_coctails.return_value = [coctail]
 
-    resp = client.get("/coctails/?name=screwdriver")
+    resp = client.get("/coctails")
     resp.raise_for_status()
 
     coctails = TypeAdapter(list[Coctail]).validate_json(resp.text)

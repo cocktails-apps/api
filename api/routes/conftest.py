@@ -1,4 +1,4 @@
-from unittest.mock import create_autospec, patch
+from unittest.mock import create_autospec
 
 import pytest
 from fastapi import FastAPI
@@ -14,11 +14,8 @@ def storage() -> Storage:
 
 
 @pytest.fixture
-def app(storage: Storage) -> FastAPI:
-    with patch("api.routes.coctails.get_storage", return_value=storage), patch(
-        "api.routes.glasses.get_storage", return_value=storage
-    ), patch("api.routes.ingridients.get_storage", return_value=storage):
-        yield FastAPI(debug=True)
+def app() -> FastAPI:
+    return FastAPI(debug=True)
 
 
 @pytest.fixture
