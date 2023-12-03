@@ -18,12 +18,18 @@ motor = "^3.3.2"
 
 
 [tool.poetry.group.dev.dependencies]
+# CI tooling
 poethepoet = "^0.24.3"
-pre-commit = "^3.5.0"
-
 pipenv = "^2023.11.15"
+
+# Linters
+pre-commit = "^3.5.0"
+mypy = "^1.7.1"
+
+# Local run
 uvicorn = { extras = ["standard"], version = "^0.24.0.post1" }
 
+# Tests
 httpx = "^0.25.1"
 pytest = "^7.4.3"
 pytest-asyncio = "^0.21.1"
@@ -40,7 +46,10 @@ build-backend = "poetry.core.masonry.api"
 [tool.poe.tasks]
 run = "poetry run python ./main.py"
 
-lint = "poetry run pre-commit run --all-files"
+lint = [
+    { cmd = "poetry run pre-commit run --all-files || poetry run pre-commit run --all-files" },
+    { cmd = "mypy --install-types --non-interactive ." },
+]
 
 test = "poetry run pytest"
 test-ci = "poetry run poe test --cov=api --cov-report=xml"
