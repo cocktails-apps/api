@@ -1,3 +1,5 @@
+from unittest.mock import create_autospec
+
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -5,6 +7,11 @@ from pydantic import TypeAdapter
 
 from ..storage import Coctail, Storage
 from .coctails import register_coctails_routes
+
+
+@pytest.fixture
+def storage() -> Storage:
+    return create_autospec(Storage, spec_set=True, instance=True)
 
 
 @pytest.fixture
@@ -19,8 +26,8 @@ def test_get(client: TestClient, storage: Storage) -> None:
             id="1",
             name="screwdriver",
             description="Cool coctail",
-            ingredients=[],
-            glass_type=[],
+            ingridients=[],
+            glass=[],
         )
     ]
 

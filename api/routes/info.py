@@ -5,19 +5,19 @@ from fastapi import APIRouter, FastAPI
 from fastapi.exceptions import HTTPException
 from pydantic import BaseModel
 
-from ..storage import Storage
+from ..storage import is_connected
 
 
 class HealthResponse(BaseModel):
     status: Literal["OK"] = "OK"
 
 
-def register_info_routes(app: FastAPI, storage: Storage) -> None:
+def register_info_routes(app: FastAPI) -> None:
     router = APIRouter(prefix="/info")
 
     @router.get("/health")
     async def health() -> HealthResponse:
-        if not await storage.is_connected():
+        if not await is_connected():
             raise HTTPException(
                 HTTPStatus.INTERNAL_SERVER_ERROR, "Not connected to MongoDB"
             )

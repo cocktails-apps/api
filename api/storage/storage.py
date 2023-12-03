@@ -1,132 +1,139 @@
 import asyncio
-from typing import LiteralString
+from collections.abc import Iterable
+from functools import cache
 
-from bson import ObjectId
-from motor.motor_asyncio import AsyncIOMotorClient
-
-from .models import (
-    Coctail,
-    CoctailDocument,
+from .client import get_client
+from .coctails_storage import (
     CoctailId,
-    CoctailUpload,
-    Glass,
-    GlassDocument,
-    GlassId,
-    GlassUpload,
+    CoctailIngridientPartial,
+    CoctailPartialWithoutId,
+    CoctailsStorage,
+)
+from .commons import ApiBaseModel, DocumentNotFound
+from .glass_storage import Glass, GlassId, GlassStorage, GlassWithoutId
+from .ingridients_storage import (
     Ingridient,
-    IngridientDocument,
     IngridientId,
-    IngridientUpload,
+    IngridientsStorage,
+    IngridientWithoutId,
 )
 
 DB_NAME = "coctails"
 
 
-class DocumentNotFound(ValueError):
-    def __init__(self, collection: LiteralString, reason: str) -> None:
-        self.collection = collection
-        super().__init__(f"Document not found in {collection}: {reason}")
+class CoctailIngridient(Ingridient):
+    amount: int
+
+
+class Coctail(ApiBaseModel):
+    id: CoctailId
+    name: str
+    description: str
+    ingridients: list[CoctailIngridient]
+    glass: list[Glass]
 
 
 class Storage:
-    def __init__(self, mongo_client: AsyncIOMotorClient) -> None:
-        self._mongo_client = mongo_client
-        self._db = mongo_client[DB_NAME]
-        self._ingridients = self._db[IngridientDocument.collection_name]
-        self._glasses = self._db[GlassDocument.collection_name]
-        self._coctails = self._db[CoctailDocument.collection_name]
+    def __init__(
+        self,
+        ingridients_storage: IngridientsStorage,
+        glasses_storage: GlassStorage,
+        coctails_storage: CoctailsStorage,
+    ) -> None:
+        self._ingridients_storage = ingridients_storage
+        self._glasses_storage = glasses_storage
+        self._coctails_storage = coctails_storage
 
-    async def is_connected(self) -> bool:
-        try:
-            await self._mongo_client.server_info()
-            return True
-        except Exception:
-            return False
-
-    async def save_ingridient(self, ingridient: IngridientUpload) -> Ingridient:
-        res = await self._ingridients.insert_one(ingridient.model_dump(by_alias=True))
-        return Ingridient(
-            id=str(res.inserted_id),
-            name=ingridient.name,
-            description=ingridient.description,
-        )
+    async def save_ingridient(self, ingridient: IngridientWithoutId) -> Ingridient:
+        return await self._ingridients_storage.save(ingridient)
 
     async def get_ingridient_by_id(self, ingridient_id: IngridientId) -> Ingridient:
-        res = await self._ingridients.find_one({"_id": ObjectId(ingridient_id)})
-        if res is None:
-            raise DocumentNotFound(
-                IngridientDocument.collection_name, f"id={ingridient_id}"
-            )
+        return await self._ingridients_storage.get_by_id(ingridient_id)
 
-        res["id"] = str(res["_id"])
-        return Ingridient.model_validate(res)
-
-    async def save_glass(self, glass: GlassUpload) -> Glass:
-        res = await self._glasses.insert_one(glass.model_dump(by_alias=True))
-        return Glass(
-            id=str(res.inserted_id), name=glass.name, description=glass.description
-        )
+    async def save_glass(self, glass: GlassWithoutId) -> Glass:
+        return await self._glasses_storage.save(glass)
 
     async def get_glass_by_id(self, glass_id: GlassId) -> Glass:
-        res = await self._glasses.find_one({"_id": ObjectId(glass_id)})
-        if res is None:
-            raise DocumentNotFound(GlassDocument.collection_name, f"id={glass_id}")
+        return await self._glasses_storage.get_by_id(glass_id)
 
-        res["id"] = str(res["_id"])
-        return Glass.model_validate(res)
-
-    async def save_coctail(self, coctail: CoctailUpload) -> Coctail:
+    async def save_coctail(self, coctail: CoctailPartialWithoutId) -> Coctail:
         try:
             async with asyncio.TaskGroup() as tg:
                 ingridient_tasks = [
-                    tg.create_task(self.get_ingridient_by_id(ing.id))
-                    for ing in coctail.ingredients
+                    tg.create_task(self.get_ingridient_by_id(ingridient.id))
+                    for ingridient in coctail.ingridients
                 ]
-                glass_types_tasks = [
+                glass_tasks = [
                     tg.create_task(self.get_glass_by_id(glass.id))
-                    for glass in coctail.glass_type
+                    for glass in coctail.glass
                 ]
         except ExceptionGroup:
-            raise DocumentNotFound(
-                CoctailDocument.collection_name, "Some of the parts not found"
-            )
+            raise DocumentNotFound("Some of the parts not found")
 
-        res = await self._coctails.insert_one(
-            dict(
-                name=coctail.name,
-                description=coctail.description,
-                ingredients=[ObjectId(ing.id) for ing in coctail.ingredients],
-                glassType=[ObjectId(glass.id) for glass in coctail.glass_type],
-            )
-        )
+        res = await self._coctails_storage.save(coctail)
         return Coctail(
-            id=str(res.inserted_id),
+            id=res.id,
             name=coctail.name,
             description=coctail.description,
-            ingredients=[ing_task.result() for ing_task in ingridient_tasks],
-            glass_type=[glass_task.result() for glass_task in glass_types_tasks],
+            ingridients=self._get_ingridients_from_tasks(
+                zip(coctail.ingridients, ingridient_tasks, strict=True)
+            ),
+            glass=[glass_task.result() for glass_task in glass_tasks],
         )
 
     async def get_coctail_by_id(self, coctail_id: CoctailId) -> Coctail:
-        res = await self._coctails.find_one({"_id": ObjectId(coctail_id)})
-        if res is None:
-            raise DocumentNotFound(CoctailDocument.collection_name, f"id={coctail_id}")
-
         # TODO: consifer using MongoDB aggregation pipeline
-        async with asyncio.TaskGroup() as tg:
-            ingridient_tasks = [
-                tg.create_task(self.get_ingridient_by_id(ing_id))
-                for ing_id in res["ingredients"]
-            ]
-            glass_types_tasks = [
-                tg.create_task(self.get_glass_by_id(glass_id))
-                for glass_id in res["glassType"]
-            ]
 
-        res["id"] = str(res["_id"])
-        res["ingredients"] = [ing_task.result() for ing_task in ingridient_tasks]
-        res["glassType"] = [glass_task.result() for glass_task in glass_types_tasks]
-        return Coctail.model_validate(res)
+        coctail = await self._coctails_storage.get_by_id(coctail_id)
+
+        try:
+            async with asyncio.TaskGroup() as tg:
+                ingridient_tasks = [
+                    tg.create_task(self.get_ingridient_by_id(ingridient.id))
+                    for ingridient in coctail.ingridients
+                ]
+                glass_tasks = [
+                    tg.create_task(self.get_glass_by_id(glass.id))
+                    for glass in coctail.glass
+                ]
+        except ExceptionGroup:
+            raise DocumentNotFound("Some of the parts not found")
+
+        return Coctail(
+            id=coctail_id,
+            name=coctail.name,
+            description=coctail.description,
+            ingridients=self._get_ingridients_from_tasks(
+                zip(coctail.ingridients, ingridient_tasks, strict=True)
+            ),
+            glass=[glass_task.result() for glass_task in glass_tasks],
+        )
 
     async def get_coctails(self) -> list[Coctail]:
         return []
+
+    @staticmethod
+    def _get_ingridients_from_tasks(
+        ingridients: Iterable[
+            tuple[CoctailIngridientPartial, asyncio.Task[Ingridient]]
+        ],
+    ) -> list[CoctailIngridient]:
+        return [
+            CoctailIngridient(
+                id=ingridient_task.result().id,
+                name=ingridient_task.result().name,
+                description=ingridient_task.result().description,
+                amount=ingridient.amount,
+            )
+            for ingridient, ingridient_task in ingridients
+        ]
+
+
+@cache
+def get_storage() -> Storage:
+    mongo_client = get_client()
+    db = mongo_client[DB_NAME]
+    ingridients_storage = IngridientsStorage(db)
+    glasses_storage = GlassStorage(db)
+    coctails_storage = CoctailsStorage(db)
+    return Storage(ingridients_storage, glasses_storage, coctails_storage)
