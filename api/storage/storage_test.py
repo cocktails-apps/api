@@ -95,6 +95,14 @@ async def test_get_glass_by_id(
     glass_storage.get_by_id.assert_called_once()
 
 
+async def test_get_glasses(
+    sut: Storage, glass_storage: GlassesStorage, glass: Glass
+) -> None:
+    glass_storage.get_all.return_value = [glass]
+    assert await sut.get_glasses() == [glass]
+    glass_storage.get_all.assert_called_once()
+
+
 async def test_save_coctail(
     sut: Storage,
     ingridients_storage: IngridientsStorage,

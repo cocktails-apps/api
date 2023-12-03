@@ -20,3 +20,13 @@ async def test_save_get(sut: GlassesStorage):
     glass = await sut.save(upload)
 
     assert glass == await sut.get_by_id(glass.id)
+
+
+async def test_get_all(sut: GlassesStorage):
+    upload = [
+        GlassWithoutId(name="glass 1", description="test description"),
+        GlassWithoutId(name="glass 2", description="test description"),
+    ]
+
+    glasses = [await sut.save(glass) for glass in upload]
+    assert glasses == await sut.get_all()

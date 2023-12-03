@@ -56,6 +56,9 @@ class Storage:
     async def get_glass_by_id(self, glass_id: GlassId) -> Glass:
         return await self._glasses_storage.get_by_id(glass_id)
 
+    async def get_glasses(self) -> list[Glass]:
+        return await self._glasses_storage.get_all()
+
     async def save_coctail(self, coctail: CoctailPartialWithoutId) -> Coctail:
         try:
             async with asyncio.TaskGroup() as tg:

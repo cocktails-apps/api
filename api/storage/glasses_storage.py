@@ -1,4 +1,5 @@
-from typing import NewType
+from collections.abc import Mapping
+from typing import Any, NewType
 
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -39,6 +40,14 @@ class GlassesStorage:
         if res is None:
             raise DocumentNotFound(f"Glass with {id=} not found")
 
-        res = dict(res)
-        res["id"] = str(res["_id"])
-        return Glass.model_validate(res)
+        return self._parse_doc(res)
+
+    async def get_all(self) -> list[Glass]:
+        cur = self._collection.find()
+        return list(map(self._parse_doc, await cur.to_list(length=None)))
+
+    @staticmethod
+    def _parse_doc(doc: Mapping[str, Any]) -> Glass:
+        doc = dict(doc)
+        doc["id"] = str(doc["_id"])
+        return Glass.model_validate(doc)
