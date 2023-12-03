@@ -20,24 +20,24 @@ def app(app: FastAPI, storage: Storage) -> FastAPI:
     return app
 
 
-def test_get_all(client: TestClient, storage: Storage) -> None:
-    storage.get_glasses.return_value = [
-        Glass(id="1", name="highball", description="test")
-    ]
+@pytest.fixture
+def glass() -> Glass:
+    return Glass(id="1", name="highball", description="Some description")
+
+
+def test_get_all(client: TestClient, storage: Storage, glass: Glass) -> None:
+    storage.get_glasses.return_value = [glass]
 
     resp = client.get("/glasses")
     resp.raise_for_status()
 
     glasses = TypeAdapter(list[Glass]).validate_json(resp.text)
     assert len(glasses) == 1
-    glass = glasses[0]
-    assert glass.name == "highball"
-    assert glass.description == "test"
+    assert glasses[0] == glass
 
 
-async def test_create(client: TestClient, storage: Storage) -> None:
-    glass_without_id = GlassWithoutId(name="highball", description="test")
-    glass = Glass(id="1", **glass_without_id.model_dump())
+async def test_create(client: TestClient, storage: Storage, glass: Glass) -> None:
+    glass_without_id = GlassWithoutId.model_validate(glass.model_dump(by_alias=True))
     storage.save_glass.return_value = glass
 
     resp = client.post("/glasses", json=glass_without_id.model_dump(by_alias=True))

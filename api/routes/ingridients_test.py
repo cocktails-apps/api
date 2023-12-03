@@ -20,24 +20,29 @@ def app(app: FastAPI, storage: Storage) -> FastAPI:
     return app
 
 
-def test_get_all(client: TestClient, storage: Storage) -> None:
-    storage.get_ingridients.return_value = [
-        Ingridient(id="1", name="Juice", description="test")
-    ]
+@pytest.fixture
+def ingridient() -> Ingridient:
+    return Ingridient(id="1", name="Orange juice", description="Some description")
+
+
+def test_get_all(client: TestClient, storage: Storage, ingridient: Ingridient) -> None:
+    storage.get_ingridients.return_value = [ingridient]
 
     resp = client.get("/ingridients")
     resp.raise_for_status()
 
     ingridients = TypeAdapter(list[Ingridient]).validate_json(resp.text)
     assert len(ingridients) == 1
-    ingridient = ingridients[0]
-    assert ingridient.name == "Juice"
-    assert ingridient.description == "test"
+    ingridient_resp = ingridients[0]
+    assert ingridient_resp == ingridient
 
 
-async def test_create(client: TestClient, storage: Storage) -> None:
-    ingridient_without_id = IngridientWithoutId(name="Juice", description="test")
-    ingridient = Ingridient(id="1", **ingridient_without_id.model_dump())
+async def test_create(
+    client: TestClient, storage: Storage, ingridient: Ingridient
+) -> None:
+    ingridient_without_id = IngridientWithoutId.model_validate(
+        ingridient.model_dump(by_alias=True)
+    )
     storage.save_ingridient.return_value = ingridient
 
     resp = client.post(
