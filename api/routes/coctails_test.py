@@ -1,3 +1,4 @@
+from http import HTTPStatus
 from unittest.mock import patch
 
 import pytest
@@ -5,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from pydantic import TypeAdapter
 
-from ..storage import Coctail, CoctailPartialWithoutId, Storage
+from ..storage import Coctail, CoctailPartialWithoutId, DocumentNotFound, Storage
 from .coctails import register_coctails_routes
 
 
@@ -41,3 +42,19 @@ async def test_create(client: TestClient, storage: Storage, coctail: Coctail) ->
 
     coctail_resp = Coctail.model_validate_json(resp.text)
     assert coctail_resp == coctail
+
+
+async def test_create_not_found(
+    app: FastAPI, storage: Storage, coctail: Coctail
+) -> None:
+    client = TestClient(app, raise_server_exceptions=False)
+    coctail_partial_without_id = CoctailPartialWithoutId.model_validate(
+        coctail.model_dump(by_alias=True, mode="json")
+    )
+    storage.save_coctail.side_effect = DocumentNotFound("Ingridient not found")
+
+    resp = client.post(
+        "/coctails",
+        json=coctail_partial_without_id.model_dump(by_alias=True, mode="json"),
+    )
+    assert resp.status_code == HTTPStatus.NOT_FOUND

@@ -1,6 +1,9 @@
-from fastapi import APIRouter, FastAPI
+from http import HTTPStatus
 
-from ..storage import Coctail, CoctailPartialWithoutId, get_storage
+from fastapi import APIRouter, FastAPI
+from fastapi.exceptions import HTTPException
+
+from ..storage import Coctail, CoctailPartialWithoutId, DocumentNotFound, get_storage
 
 
 def register_coctails_routes(app: FastAPI) -> None:
@@ -12,6 +15,9 @@ def register_coctails_routes(app: FastAPI) -> None:
 
     @router.post("/")
     async def create(coctail: CoctailPartialWithoutId) -> Coctail:
-        return await get_storage().save_coctail(coctail)
+        try:
+            return await get_storage().save_coctail(coctail)
+        except DocumentNotFound:
+            raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
 
     app.include_router(router)
