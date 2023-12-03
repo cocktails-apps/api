@@ -52,7 +52,7 @@ jobs:
       - name: Export dependencies to Pipfile
         run: |
           poetry export --without-hashes --output requirements.txt
-          pipenv lock
+          poetry run pipenv lock
 
       - name: Commit Pipfile
         uses: stefanzweifel/git-auto-commit-action@v5
