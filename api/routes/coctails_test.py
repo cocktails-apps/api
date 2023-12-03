@@ -8,8 +8,8 @@ from .coctails import register_coctails_routes
 
 
 @pytest.fixture
-def app(app: FastAPI, storage: Storage) -> FastAPI:
-    register_coctails_routes(app, storage)
+def app(app: FastAPI) -> FastAPI:
+    register_coctails_routes(app)
     return app
 
 

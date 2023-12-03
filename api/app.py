@@ -14,13 +14,13 @@ from .storage import get_storage
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    storage = get_storage()
-    register_info_routes(app)
-    register_coctails_routes(app, storage)
-    register_glasses_routes(app, storage)
-    register_ingridients_routes(app, storage)
+    app.state.storage = get_storage()
 
     yield
 
 
 app = FastAPI(lifespan=lifespan)
+register_info_routes(app)
+register_coctails_routes(app)
+register_glasses_routes(app)
+register_ingridients_routes(app)

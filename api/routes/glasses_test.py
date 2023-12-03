@@ -8,8 +8,8 @@ from .glasses import register_glasses_routes
 
 
 @pytest.fixture
-def app(app: FastAPI, storage: Storage) -> FastAPI:
-    register_glasses_routes(app, storage)
+def app(app: FastAPI) -> FastAPI:
+    register_glasses_routes(app)
     return app
 
 

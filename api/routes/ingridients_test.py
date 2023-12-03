@@ -8,8 +8,8 @@ from .ingridients import register_ingridients_routes
 
 
 @pytest.fixture
-def app(app: FastAPI, storage: Storage) -> FastAPI:
-    register_ingridients_routes(app, storage)
+def app(app: FastAPI) -> FastAPI:
+    register_ingridients_routes(app)
     return app
 
 

@@ -9,18 +9,20 @@ from ..storage.storage import CoctailIngridient
 
 
 @pytest.fixture
-def app() -> FastAPI:
-    return FastAPI(debug=True)
+def storage() -> Storage:
+    return create_autospec(Storage, spec_set=True, instance=True)
+
+
+@pytest.fixture
+def app(storage: Storage) -> FastAPI:
+    res = FastAPI(debug=True)
+    res.state.storage = storage
+    return res
 
 
 @pytest.fixture
 def client(app: FastAPI) -> TestClient:
     return TestClient(app)
-
-
-@pytest.fixture
-def storage() -> Storage:
-    return create_autospec(Storage, spec_set=True, instance=True)
 
 
 @pytest.fixture
