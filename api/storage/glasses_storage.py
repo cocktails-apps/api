@@ -17,10 +17,10 @@ class Glass(GlassWithoutId):
     id: GlassId
 
 
-GLASS_COLLECTION = "glass"
+GLASS_COLLECTION = "glasses"
 
 
-class GlassStorage:
+class GlassesStorage:
     def __init__(self, db: AsyncIOMotorDatabase) -> None:
         self._collection = db[GLASS_COLLECTION]
 

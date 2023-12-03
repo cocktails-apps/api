@@ -29,7 +29,7 @@ async def test_save_get(sut: CoctailsStorage):
             CoctailIngridientPartial(id=str(ObjectId()), amount=50),
             CoctailIngridientPartial(id=str(ObjectId()), amount=100),
         ],
-        glass=[
+        glasses=[
             CoctailGlassPartial(id=str(ObjectId())),
             CoctailGlassPartial(id=str(ObjectId())),
         ],

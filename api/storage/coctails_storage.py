@@ -4,7 +4,7 @@ from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from .commons import ApiBaseModel, DocumentNotFound, add_metadata
-from .glass_storage import GlassId
+from .glasses_storage import GlassId
 from .ingridients_storage import IngridientId
 
 CoctailId = NewType("CoctailId", str)
@@ -23,7 +23,7 @@ class CoctailPartialWithoutId(ApiBaseModel):
     name: str
     description: str
     ingridients: list[CoctailIngridientPartial]
-    glass: list[CoctailGlassPartial]
+    glasses: list[CoctailGlassPartial]
 
 
 class CoctailPartial(CoctailPartialWithoutId):
@@ -42,7 +42,7 @@ class CoctailsStorage:
 
         for ing in doc["ingridients"]:
             ing["id"] = ObjectId(ing["id"])
-        for glass in doc["glass"]:
+        for glass in doc["glasses"]:
             glass["id"] = ObjectId(glass["id"])
 
         res = await self._collection.insert_one(add_metadata(doc))
@@ -51,7 +51,7 @@ class CoctailsStorage:
             name=coctail.name,
             description=coctail.description,
             ingridients=coctail.ingridients,
-            glass=coctail.glass,
+            glasses=coctail.glasses,
         )
 
     async def get_by_id(self, id: CoctailId) -> CoctailPartial:
@@ -65,5 +65,5 @@ class CoctailsStorage:
             dict(id=str(ingridient["id"]), amount=ingridient["amount"])
             for ingridient in res["ingridients"]
         ]
-        res["glass"] = [dict(id=str(glass["id"])) for glass in res["glass"]]
+        res["glasses"] = [dict(id=str(glass["id"])) for glass in res["glasses"]]
         return CoctailPartial.model_validate(res)

@@ -27,7 +27,7 @@ def test_get(client: TestClient, storage: Storage) -> None:
             name="screwdriver",
             description="Cool coctail",
             ingridients=[],
-            glass=[],
+            glasses=[],
         )
     ]
 

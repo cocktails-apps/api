@@ -9,7 +9,7 @@ from .coctails_storage import (
     CoctailPartial,
     CoctailsStorage,
 )
-from .glass_storage import Glass, GlassStorage
+from .glasses_storage import Glass, GlassesStorage
 from .ingridients_storage import Ingridient, IngridientsStorage
 from .storage import Storage
 
@@ -20,8 +20,8 @@ def ingridients_storage() -> IngridientsStorage:
 
 
 @pytest.fixture
-def glass_storage() -> GlassStorage:
-    return create_autospec(GlassStorage, spec_set=True, instance=True)
+def glass_storage() -> GlassesStorage:
+    return create_autospec(GlassesStorage, spec_set=True, instance=True)
 
 
 @pytest.fixture
@@ -46,14 +46,14 @@ def coctail(ingridient: Ingridient, glass: Glass) -> CoctailPartial:
         name="test coctail",
         description="test",
         ingridients=[CoctailIngridientPartial(id=ingridient.id, amount=150)],
-        glass=[CoctailGlassPartial(id=glass.id)],
+        glasses=[CoctailGlassPartial(id=glass.id)],
     )
 
 
 @pytest.fixture
 def sut(
     ingridients_storage: IngridientsStorage,
-    glass_storage: GlassStorage,
+    glass_storage: GlassesStorage,
     coctails_storage: CoctailsStorage,
 ) -> Storage:
     return Storage(ingridients_storage, glass_storage, coctails_storage)
@@ -78,7 +78,7 @@ async def test_get_ingridient_by_id(
 
 
 async def test_save_glass(
-    sut: Storage, glass_storage: GlassStorage, glass: Glass
+    sut: Storage, glass_storage: GlassesStorage, glass: Glass
 ) -> None:
     glass_storage.save.return_value = glass
     result = await sut.save_glass(glass)
@@ -87,7 +87,7 @@ async def test_save_glass(
 
 
 async def test_get_glass_by_id(
-    sut: Storage, glass_storage: GlassStorage, glass: Glass
+    sut: Storage, glass_storage: GlassesStorage, glass: Glass
 ) -> None:
     glass_storage.get_by_id.return_value = glass
     result = await sut.get_glass_by_id(glass.id)
@@ -98,7 +98,7 @@ async def test_get_glass_by_id(
 async def test_save_coctail(
     sut: Storage,
     ingridients_storage: IngridientsStorage,
-    glass_storage: GlassStorage,
+    glass_storage: GlassesStorage,
     coctails_storage: CoctailsStorage,
     ingridient: Ingridient,
     glass: Glass,
@@ -115,14 +115,14 @@ async def test_save_coctail(
     assert result.name == coctail.name
     assert result.description == coctail.description
     assert len(result.ingridients) == len(coctail.ingridients)
-    assert len(result.glass) == len(coctail.glass)
+    assert len(result.glasses) == len(coctail.glasses)
     coctails_storage.save.assert_called_once()
 
 
 async def test_get_coctail_by_id(
     sut: Storage,
     ingridients_storage: IngridientsStorage,
-    glass_storage: GlassStorage,
+    glass_storage: GlassesStorage,
     coctails_storage: CoctailsStorage,
     ingridient: Ingridient,
     glass: Glass,
@@ -138,5 +138,5 @@ async def test_get_coctail_by_id(
     assert result.name == coctail.name
     assert result.description == coctail.description
     assert len(result.ingridients) == len(coctail.ingridients)
-    assert len(result.glass) == len(coctail.glass)
+    assert len(result.glasses) == len(coctail.glasses)
     coctails_storage.get_by_id.assert_called_once()

@@ -10,7 +10,7 @@ from .coctails_storage import (
     CoctailsStorage,
 )
 from .commons import ApiBaseModel, DocumentNotFound
-from .glass_storage import Glass, GlassId, GlassStorage, GlassWithoutId
+from .glasses_storage import Glass, GlassesStorage, GlassId, GlassWithoutId
 from .ingridients_storage import (
     Ingridient,
     IngridientId,
@@ -30,14 +30,14 @@ class Coctail(ApiBaseModel):
     name: str
     description: str
     ingridients: list[CoctailIngridient]
-    glass: list[Glass]
+    glasses: list[Glass]
 
 
 class Storage:
     def __init__(
         self,
         ingridients_storage: IngridientsStorage,
-        glasses_storage: GlassStorage,
+        glasses_storage: GlassesStorage,
         coctails_storage: CoctailsStorage,
     ) -> None:
         self._ingridients_storage = ingridients_storage
@@ -65,7 +65,7 @@ class Storage:
                 ]
                 glass_tasks = [
                     tg.create_task(self.get_glass_by_id(glass.id))
-                    for glass in coctail.glass
+                    for glass in coctail.glasses
                 ]
         except ExceptionGroup:
             raise DocumentNotFound("Some of the parts not found")
@@ -78,7 +78,7 @@ class Storage:
             ingridients=self._get_ingridients_from_tasks(
                 zip(coctail.ingridients, ingridient_tasks, strict=True)
             ),
-            glass=[glass_task.result() for glass_task in glass_tasks],
+            glasses=[glass_task.result() for glass_task in glass_tasks],
         )
 
     async def get_coctail_by_id(self, coctail_id: CoctailId) -> Coctail:
@@ -94,7 +94,7 @@ class Storage:
                 ]
                 glass_tasks = [
                     tg.create_task(self.get_glass_by_id(glass.id))
-                    for glass in coctail.glass
+                    for glass in coctail.glasses
                 ]
         except ExceptionGroup:
             raise DocumentNotFound("Some of the parts not found")
@@ -106,7 +106,7 @@ class Storage:
             ingridients=self._get_ingridients_from_tasks(
                 zip(coctail.ingridients, ingridient_tasks, strict=True)
             ),
-            glass=[glass_task.result() for glass_task in glass_tasks],
+            glasses=[glass_task.result() for glass_task in glass_tasks],
         )
 
     async def get_coctails(self) -> list[Coctail]:
@@ -134,6 +134,6 @@ def get_storage() -> Storage:
     mongo_client = get_client()
     db = mongo_client[DB_NAME]
     ingridients_storage = IngridientsStorage(db)
-    glasses_storage = GlassStorage(db)
+    glasses_storage = GlassesStorage(db)
     coctails_storage = CoctailsStorage(db)
     return Storage(ingridients_storage, glasses_storage, coctails_storage)

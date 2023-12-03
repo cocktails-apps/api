@@ -1,7 +1,7 @@
 from .client import get_client, is_connected
 from .coctails_storage import CoctailId, CoctailPartialWithoutId
 from .commons import DocumentNotFound
-from .glass_storage import Glass, GlassId, GlassWithoutId
+from .glasses_storage import Glass, GlassId, GlassWithoutId
 from .ingridients_storage import Ingridient, IngridientId, IngridientWithoutId
 from .storage import Coctail, Storage, get_storage
 
