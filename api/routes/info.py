@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from sys import version
 from typing import Literal
 
 from fastapi import APIRouter, FastAPI
@@ -12,8 +13,12 @@ class HealthResponse(BaseModel):
     status: Literal["OK"] = "OK"
 
 
+class VersionsResponse(BaseModel):
+    python: str = version
+
+
 def register_info_routes(app: FastAPI) -> None:
-    router = APIRouter(prefix="/info")
+    router = APIRouter(prefix="/info", tags=["info"])
 
     @router.get("/health")
     async def health() -> HealthResponse:
@@ -24,4 +29,8 @@ def register_info_routes(app: FastAPI) -> None:
 
         return HealthResponse()
 
-    app.include_router(router, include_in_schema=False)
+    @router.get("/versions")
+    async def version() -> VersionsResponse:
+        return VersionsResponse()
+
+    app.include_router(router)
