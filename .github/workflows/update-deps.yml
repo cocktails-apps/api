@@ -1,0 +1,65 @@
+name: Dependencies and linter update
+
+on:
+  # workflow_dispatch:
+  # schedule:
+  #   - cron: '0 0 * * *'
+  pull_request:
+    branches:
+      - 11-update-deps-in-ci
+
+  push:
+    branches:
+      - 11-update-deps-in-ci
+
+jobs:
+  poetry-update:
+    permissions:
+      pull-requests: write
+      issues: write
+      contents: write
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          installer-parallel: true
+
+      - name: Update dependencies
+        run: |
+          poetry run poe update-deps
+          poetry run poe update-linters
+          bump-minor
+
+      - name: Create PR
+        id: cpr
+        uses: peter-evans/create-pull-request@v5
+        with:
+          title: Auto-update dependencies
+          body: |
+            Update versions
+          labels: dependencies
+
+          token: ${{ secrets.CI_TOKEN }}
+
+          base: 11-update-deps-in-ci
+          branch-suffix: short-commit-hash
+          commit-message: Automatic update
+          delete-branch: true
+
+      - name: Enable PR auto-merge
+        if: ${{ steps.cpr.outputs.pull-request-number }}
+        run: gh pr merge ${{ steps.cpr.outputs.pull-request-number }} --squash --auto
+        env:
+          GH_TOKEN: ${{ secrets.CI_TOKEN }}
