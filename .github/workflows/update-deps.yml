@@ -41,7 +41,7 @@ jobs:
           poetry install
           poetry run poe update-deps
           poetry run poe update-linters
-          bump-minor
+          poetry run poe bump-minor
 
       - name: Create PR
         id: cpr
