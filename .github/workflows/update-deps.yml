@@ -38,6 +38,7 @@ jobs:
 
       - name: Update dependencies
         run: |
+          poetry install
           poetry run poe update-deps
           poetry run poe update-linters
           bump-minor
