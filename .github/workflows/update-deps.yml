@@ -41,7 +41,10 @@ jobs:
           poetry install
           poetry run poe update-deps
           poetry run poe update-linters
-          bump-minor
+
+      - name: Bump version
+        run:
+          git diff --exit-code || poetry run poe bump-patch
 
       - name: Create PR
         id: cpr
