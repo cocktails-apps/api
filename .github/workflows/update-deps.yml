@@ -1,16 +1,9 @@
 name: Dependencies and linter update
 
 on:
-  # workflow_dispatch:
-  # schedule:
-  #   - cron: '0 0 * * *'
-  pull_request:
-    branches:
-      - 11-update-deps-in-ci
-
-  push:
-    branches:
-      - 11-update-deps-in-ci
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
 
 jobs:
   poetry-update:
@@ -57,7 +50,7 @@ jobs:
 
           token: ${{ secrets.CI_TOKEN }}
 
-          base: 11-update-deps-in-ci
+          base: main
           branch-suffix: short-commit-hash
           commit-message: Automatic update
           delete-branch: true
