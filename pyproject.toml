@@ -15,6 +15,8 @@ python = "~3.9"
 fastapi = "^0.104.1"
 pyhumps = "^3.8.0"
 motor = "^3.3.2"
+httpx = "^0.25.1"
+yarl = "^1.9.4"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -31,7 +33,6 @@ motor-types = "^1.0.0b3"
 uvicorn = { extras = ["standard"], version = "^0.24.0.post1" }
 
 # Tests
-httpx = "^0.25.1"
 pytest = "^7.4.3"
 pytest-asyncio = "^0.21.1"
 pytest-cov = "^4.1.0"
