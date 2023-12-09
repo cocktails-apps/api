@@ -1,6 +1,7 @@
 import os
 from typing import Optional
 
+import pymongo.errors
 from motor.motor_asyncio import AsyncIOMotorClient
 
 
@@ -21,5 +22,5 @@ async def is_connected(mongo_client: Optional[AsyncIOMotorClient] = None) -> boo
     try:
         await mongo_client.server_info()
         return True
-    except Exception:
+    except pymongo.errors.ServerSelectionTimeoutError:
         return False

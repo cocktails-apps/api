@@ -22,9 +22,9 @@ Description = Annotated[str, StringConstraints(strip_whitespace=True, min_length
 
 
 def add_metadata(doc: dict[str, Any]) -> dict[str, Any]:
-    doc["metadata"] = dict(
-        createdAt=Timestamp(datetime.utcnow(), 0),
-    )
+    doc["metadata"] = {
+        "createdAt": Timestamp(datetime.utcnow(), 0),
+    }
     return doc
 
 

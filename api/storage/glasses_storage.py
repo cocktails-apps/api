@@ -35,10 +35,10 @@ class GlassesStorage:
             description=glass.description,
         )
 
-    async def get_by_id(self, id: GlassId) -> Glass:
-        res = await self._collection.find_one({"_id": ObjectId(id)})
+    async def get_by_id(self, glass_id: GlassId) -> Glass:
+        res = await self._collection.find_one({"_id": ObjectId(glass_id)})
         if res is None:
-            raise DocumentNotFound(f"Glass with {id=} not found")
+            raise DocumentNotFound(f"Glass with id={glass_id} not found")
 
         return self._parse_doc(res)
 
