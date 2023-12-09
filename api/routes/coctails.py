@@ -17,7 +17,7 @@ def register_coctails_routes(app: FastAPI) -> None:
     async def create(coctail: CoctailPartialWithoutId) -> Coctail:
         try:
             return await get_storage().save_coctail(coctail)
-        except DocumentNotFound:
-            raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
+        except DocumentNotFound as exc:
+            raise HTTPException(status_code=HTTPStatus.NOT_FOUND) from exc
 
     app.include_router(router)

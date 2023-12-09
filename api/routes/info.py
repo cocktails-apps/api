@@ -21,7 +21,7 @@ def register_info_routes(app: FastAPI) -> None:
     router = APIRouter(prefix="/info", tags=["info"])
 
     @router.get("/health")
-    async def health() -> HealthResponse:
+    async def get_health() -> HealthResponse:
         if not await is_connected():
             raise HTTPException(
                 HTTPStatus.INTERNAL_SERVER_ERROR, "Not connected to MongoDB"
@@ -30,7 +30,7 @@ def register_info_routes(app: FastAPI) -> None:
         return HealthResponse()
 
     @router.get("/versions")
-    async def version() -> VersionsResponse:
+    async def get_version() -> VersionsResponse:
         return VersionsResponse()
 
     app.include_router(router)

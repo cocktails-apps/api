@@ -60,10 +60,10 @@ class CoctailsStorage:
             glasses=coctail.glasses,
         )
 
-    async def get_by_id(self, id: CoctailId) -> CoctailPartial:
-        res = await self._collection.find_one({"_id": ObjectId(id)})
+    async def get_by_id(self, coctail_id: CoctailId) -> CoctailPartial:
+        res = await self._collection.find_one({"_id": ObjectId(coctail_id)})
         if res is None:
-            raise DocumentNotFound(f"Coctail with {id=} not found")
+            raise DocumentNotFound(f"Coctail with id={coctail_id} not found")
 
         return self._parse_doc(res)
 
@@ -76,9 +76,9 @@ class CoctailsStorage:
         doc = dict(doc)
         doc["id"] = str(doc["_id"])
         doc["ingridients"] = [
-            dict(id=str(ingridient["id"]), amount=ingridient["amount"])
+            {"id": str(ingridient["id"]), "amount": ingridient["amount"]}
             for ingridient in doc["ingridients"]
         ]
-        doc["glasses"] = [dict(id=str(glass["id"])) for glass in doc["glasses"]]
+        doc["glasses"] = [{"id": str(glass["id"])} for glass in doc["glasses"]]
 
         return CoctailPartial.model_validate(doc)

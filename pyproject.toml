@@ -96,3 +96,11 @@ exclude_lines = ["\\.\\.\\."]
 
 [tool.pylint.MASTER]
 ignore-paths = ["^.*_test.py$", "^.*/conftest.py$"]
+disable = [
+    "E0401", # Import errors in pre-commmit env
+    "C",     # Docstring checks
+    "R0903", # Too few public methods
+]
+
+[tool.pylint.similarities]
+min-similarity-lines = 10

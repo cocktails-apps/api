@@ -34,10 +34,10 @@ class IngridientsStorage:
             description=ingridient.description,
         )
 
-    async def get_by_id(self, id: IngridientId) -> Ingridient:
-        res = await self._collection.find_one({"_id": ObjectId(id)})
+    async def get_by_id(self, ingridient_id: IngridientId) -> Ingridient:
+        res = await self._collection.find_one({"_id": ObjectId(ingridient_id)})
         if res is None:
-            raise DocumentNotFound(f"Ingridient with {id=} not found")
+            raise DocumentNotFound(f"Ingridient with id={ingridient_id} not found")
 
         return self._parse_doc(res)
 
