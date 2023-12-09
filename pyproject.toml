@@ -93,3 +93,6 @@ branch = true
 
 [tool.coverage.report]
 exclude_lines = ["\\.\\.\\."]
+
+[tool.pylint.MASTER]
+ignore-paths = ["^.*_test.py$", "^.*/conftest.py$"]
