@@ -2,13 +2,15 @@ import mimetypes
 from datetime import timedelta
 from http import HTTPStatus
 from pathlib import Path
-from typing import Optional
+from typing import Literal, Optional
 
 import httpx
 from fastapi import APIRouter, FastAPI, HTTPException, UploadFile
 from typing_extensions import TypeGuard
 
 from ..clients.vercel import BlobUploadResult, blob_upload
+
+CACHE_CONTROL_MAX_AGE = timedelta(minutes=3)
 
 
 def _is_image(file_name: Optional[str]) -> TypeGuard[str]:
@@ -28,7 +30,9 @@ def register_file_storage_routes(app: FastAPI) -> None:
     router = APIRouter(prefix="/files", tags=["fileStorage"])
 
     @router.post("/")
-    async def upload(file: UploadFile) -> BlobUploadResult:
+    async def upload(
+        category: Literal["ingridient", "glass", "coctail"], file: UploadFile
+    ) -> BlobUploadResult:
         async with httpx.AsyncClient() as client:
             file_name = file.filename
             if not _is_image(file_name):
@@ -39,10 +43,9 @@ def register_file_storage_routes(app: FastAPI) -> None:
 
             return await blob_upload(
                 client,
-                file_name,
+                f"{category}/{file_name}",
                 await file.read(),
-                content_type=file.content_type,
-                cache_control_max_age=timedelta(minutes=3),
+                cache_control_max_age=CACHE_CONTROL_MAX_AGE,
             )
 
     app.include_router(router)
