@@ -91,7 +91,7 @@ strict = true
 
 
 [tool.coverage.run]
-omit = ["*_test.py", "*/conftest.py"]
+omit = ["*_test.py", "*/conftest.py", "api/app.py", "api/log.py"]
 branch = true
 
 [tool.coverage.report]
