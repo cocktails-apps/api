@@ -59,7 +59,7 @@ async def blob_upload(
         headers["x-cache-control-max-age"] = str(cache_control_max_age.total_seconds())
 
     resp = await client.put(
-        str(_get_blob_api_url() / path), headers=headers, content=data
+        f"{_get_blob_api_url()}/{path}", headers=headers, content=data
     )
     raise_if_response_failed(resp)
 
