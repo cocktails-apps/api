@@ -2,10 +2,10 @@ import mimetypes
 from datetime import timedelta
 from http import HTTPStatus
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Annotated, Literal, Optional
 
 import httpx
-from fastapi import APIRouter, FastAPI, HTTPException, UploadFile
+from fastapi import APIRouter, FastAPI, Form, HTTPException, UploadFile
 from typing_extensions import TypeGuard
 
 from ..clients.vercel import BlobUploadResult, blob_upload
@@ -31,7 +31,8 @@ def register_file_storage_routes(app: FastAPI) -> None:
 
     @router.post("/")
     async def upload(
-        category: Literal["ingridient", "glass", "coctail"], file: UploadFile
+        category: Annotated[Literal["ingridient", "glass", "coctail"], Form()],
+        file: UploadFile,
     ) -> BlobUploadResult:
         async with httpx.AsyncClient() as client:
             file_name = file.filename
