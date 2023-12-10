@@ -65,14 +65,10 @@ def response() -> httpx.Response:
 
 
 @pytest.mark.parametrize(
-    ("content_type", "max_age"),
+    "max_age",
     [
-        pytest.param(
-            "some/content-type", timedelta(days=1), id="with content type and max age"
-        ),
-        pytest.param("some/content-type", None, id="with content type and no max age"),
-        pytest.param(None, timedelta(days=1), id="with no content type and max age"),
-        pytest.param(None, None, id="with no content type and no max age"),
+        timedelta(days=1),
+        None,
     ],
 )
 async def test_blob_upload(
@@ -80,34 +76,32 @@ async def test_blob_upload(
     api_url: URL,
     blob_token: str,
     response: httpx.Response,
-    content_type: Optional[str],
     max_age: Optional[timedelta],
 ) -> None:
-    path = "some-path"
+    folder = "some-folder"
+    file_name = "some-file.txt"
     data = b"some data"
 
     response.content = (
-        BlobUploadResult(url="https://some-url.com", path=path)
-        .model_dump_json()
-        .encode()
+        BlobUploadResult(url="https://some-url.com").model_dump_json().encode()
     )
     client.put.return_value = response
 
     res = await blob_upload(
-        client, path, data, content_type=content_type, cache_control_max_age=max_age
+        client,
+        folder,
+        file_name,
+        data,
+        cache_control_max_age=max_age,
     )
 
     client.put.assert_called_once()
     call = client.put.mock_calls[0]
-    assert call.args[0] == str(api_url / path)
+    assert call.args[0] == str(api_url / folder / file_name)
     headers = call.kwargs["headers"]
     assert headers["authorization"] == f"Bearer {blob_token}"
     assert headers["x-api-version"] == "5"
     assert headers["x-add-random-suffix"] == "1"
-    if content_type is not None:
-        assert headers["x-content-type"] == content_type
-    else:
-        assert "x-content-type" not in headers
 
     if max_age is not None:
         assert headers["x-cache-control-max-age"] == str(max_age.total_seconds())
@@ -122,4 +116,4 @@ async def test_blob_upload_parse_response_failure(
 ) -> None:
     response.content = b"some invalid json"
     with pytest.raises(BlobError, match="Can't parse upload response from Blob API"):
-        await blob_upload(client, "some-path", b"some data")
+        await blob_upload(client, "folder-name", "some-file", b"some data")

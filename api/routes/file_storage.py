@@ -44,7 +44,8 @@ def register_file_storage_routes(app: FastAPI) -> None:
 
             return await blob_upload(
                 client,
-                f"{category}/{file_name}",
+                category,
+                file_name,
                 await file.read(),
                 cache_control_max_age=CACHE_CONTROL_MAX_AGE,
             )

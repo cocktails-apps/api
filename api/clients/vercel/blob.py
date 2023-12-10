@@ -44,10 +44,10 @@ class BlobUploadResult(BaseModel):
 
 async def blob_upload(
     client: httpx.AsyncClient,
-    path: str,
+    folder: str,
+    file_name: str,
     data: bytes,
     *,
-    content_type: Optional[str] = None,
     cache_control_max_age: Optional[timedelta] = None,
 ) -> BlobUploadResult:
     headers = {
@@ -56,17 +56,13 @@ async def blob_upload(
         "x-add-random-suffix": "1",
     }
 
-    if content_type is not None:
-        logger.debug("Setting content type to %s", content_type)
-        headers["x-content-type"] = content_type
     if cache_control_max_age is not None:
         logger.debug("Setting cache control max age to %s", cache_control_max_age)
         headers["x-cache-control-max-age"] = str(cache_control_max_age.total_seconds())
 
-    logger.debug("Uploading %s bytes to %s", len(data), path)
-    resp = await client.put(
-        f"{_get_blob_api_url()}/{path}", headers=headers, content=data
-    )
+    upload_url = str(_get_blob_api_url() / folder / file_name)
+    logger.debug("Uploading %s bytes to %s", len(data), upload_url)
+    resp = await client.put(upload_url, headers=headers, content=data)
     raise_if_response_failed(resp)
 
     try:
