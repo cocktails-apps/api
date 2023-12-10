@@ -58,7 +58,10 @@ def blob_token() -> str:
 
 @pytest.fixture
 def response() -> httpx.Response:
-    return create_autospec(httpx.Response, spec_set=True, instance=True)
+    r = create_autospec(httpx.Response, instance=True)
+    r.is_success = True
+    r.status_code = 200
+    return r
 
 
 @pytest.mark.parametrize(
@@ -83,7 +86,6 @@ async def test_blob_upload(
     path = "some-path"
     data = b"some data"
 
-    response.is_success = True
     response.content = (
         BlobUploadResult(url="https://some-url.com", path=path)
         .model_dump_json()
@@ -119,7 +121,6 @@ async def test_blob_upload(
 async def test_blob_upload_parse_response_failure(
     client: httpx.AsyncClient, api_url: URL, blob_token: str, response: httpx.Response
 ) -> None:
-    response.is_success = True
     response.content = b"some invalid json"
     with pytest.raises(BlobError, match="Can't parse upload response from Blob API"):
         await blob_upload(client, "some-path", b"some data")

@@ -14,7 +14,7 @@ def register_file_storage_routes(app: FastAPI) -> None:
         async with httpx.AsyncClient() as client:
             return await blob_upload(
                 client,
-                file.filename,
+                file.filename or "file.bin",
                 await file.read(),
                 content_type=file.content_type,
                 cache_control_max_age=timedelta(minutes=3),
