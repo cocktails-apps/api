@@ -115,7 +115,6 @@ async def test_blob_upload(
         assert "x-cache-control-max-age" not in headers
 
     assert str(res.url) == "https://some-url.com/"
-    assert res.path == path
 
 
 async def test_blob_upload_parse_response_failure(

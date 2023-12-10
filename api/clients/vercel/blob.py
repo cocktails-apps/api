@@ -40,7 +40,6 @@ def _get_token() -> str:
 
 class BlobUploadResult(BaseModel):
     url: HttpUrl
-    path: str
 
 
 async def blob_upload(
@@ -74,6 +73,7 @@ async def blob_upload(
         logger.debug("Parsing upload response (%s): %s", resp.status_code, resp.content)
         parsed = BlobUploadResult.model_validate_json(resp.content)
     except ValidationError as e:
+        logger.exception("Failed to parse upload response")
         raise BlobError("Can't parse upload response from Blob API") from e
 
     return parsed
