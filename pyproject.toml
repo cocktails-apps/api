@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "coctails-api"
-version = "0.2.3"
+version = "0.3.0"
 description = ""
 authors = ["Dmitry Erlikh <derlih@gmail.com>"]
 readme = "README.md"
@@ -13,8 +13,12 @@ exclude = ["**/*_test.py", "**/conftest.py"]
 python = "~3.9"
 
 fastapi = "^0.104.1"
+python-multipart = "^0.0.6"
+
 pyhumps = "^3.8.0"
 motor = "^3.3.2"
+httpx = "^0.25.1"
+yarl = "^1.9.4"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -31,7 +35,6 @@ motor-types = "^1.0.0b3"
 uvicorn = { extras = ["standard"], version = "^0.24.0.post1" }
 
 # Tests
-httpx = "^0.25.1"
 pytest = "^7.4.3"
 pytest-asyncio = "^0.21.1"
 pytest-cov = "^4.1.0"
@@ -88,7 +91,7 @@ strict = true
 
 
 [tool.coverage.run]
-omit = ["*_test.py", "*/conftest.py"]
+omit = ["*_test.py", "*/conftest.py", "api/app.py", "api/log.py"]
 branch = true
 
 [tool.coverage.report]
