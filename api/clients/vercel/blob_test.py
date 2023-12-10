@@ -91,7 +91,9 @@ async def test_blob_upload(
     )
     client.put.return_value = response
 
-    res = await blob_upload(client, path, data, content_type, max_age)
+    res = await blob_upload(
+        client, path, data, content_type=content_type, cache_control_max_age=max_age
+    )
 
     client.put.assert_called_once()
     call = client.put.mock_calls[0]

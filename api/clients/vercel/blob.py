@@ -43,6 +43,7 @@ async def blob_upload(
     client: httpx.AsyncClient,
     path: str,
     data: bytes,
+    *,
     content_type: Optional[str] = None,
     cache_control_max_age: Optional[timedelta] = None,
 ) -> BlobUploadResult:
