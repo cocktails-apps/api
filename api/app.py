@@ -3,6 +3,7 @@ import os
 from fastapi import FastAPI
 
 from .log import configure_logger
+from .middleware import register_cors_middleware
 from .routes import (
     register_coctails_routes,
     register_file_storage_routes,
@@ -15,6 +16,9 @@ debug = os.environ.get("DEBUG", "false").lower() == "true"
 configure_logger(debug)
 
 app = FastAPI(debug=debug)
+
+register_cors_middleware(app)
+
 register_info_routes(app)
 register_coctails_routes(app)
 register_glasses_routes(app)
