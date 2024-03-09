@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "coctails-api"
-version = "0.4.24"
+version = "0.4.25"
 description = ""
 authors = ["Dmitry Erlikh <derlih@gmail.com>"]
 readme = "README.md"
