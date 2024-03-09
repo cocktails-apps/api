@@ -19,6 +19,7 @@ pyhumps = "^3.8.0"
 motor = "^3.3.2"
 httpx = "^0"
 yarl = "^1.9.4"
+strawberry-graphql = {extras = ["fastapi"], version = "^0.220.0"}
 
 
 [tool.poetry.group.dev.dependencies]
