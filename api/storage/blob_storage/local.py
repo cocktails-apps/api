@@ -1,4 +1,8 @@
+import tempfile
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
+from typing import Optional
 
 from yarl import URL
 
@@ -41,3 +45,12 @@ class LocalBlobStorage(BlobStorage):
         file_path.write_bytes(data)
 
         return URL.build(scheme="file", host=str(file_path))
+
+
+@contextmanager
+def local_blob_storage(root_folder: Optional[Path]) -> Iterator[LocalBlobStorage]:
+    if root_folder is None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            yield LocalBlobStorage(root_folder=Path(temp_dir))
+    else:
+        yield LocalBlobStorage(root_folder=root_folder)

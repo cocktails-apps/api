@@ -11,15 +11,18 @@ from .routes import (
     register_info_routes,
     register_ingridients_routes,
 )
+from .state import lifespan
 
 debug = os.environ.get("DEBUG", "0").lower() != "0"
 
 configure_logger(debug)
 
+
 app = FastAPI(
     debug=debug,
     docs_url="/docs" if debug else None,
     redoc_url="/redoc" if debug else None,
+    lifespan=lifespan,
 )
 
 register_cors_middleware(app)

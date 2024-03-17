@@ -13,7 +13,8 @@
       "args": ["api.app:app", "--reload"],
       "env": {
         "USE_MONGOMOCK": "1",
-        "DEBUG": "1"
+        "DEBUG": "1",
+        "LOCAL_BLOB_STORAGE_PATH": "${workspaceFolder}/blob_storage"
       }
     }
   ]

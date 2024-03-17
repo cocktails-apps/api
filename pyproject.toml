@@ -48,7 +48,7 @@ build-backend = "poetry.core.masonry.api"
 
 
 [tool.poe.tasks]
-run = { shell = "USE_MONGOMOCK=1 DEBUG=1 poetry run python ./main.py" }
+run = { shell = "USE_MONGOMOCK=1 DEBUG=1 LOCAL_BLOB_STORAGE_PATH=./blob_storage poetry run python ./main.py" }
 
 lint = [
     { shell = "poetry run pre-commit run --all-files || poetry run pre-commit run --all-files" },
