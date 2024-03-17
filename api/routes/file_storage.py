@@ -3,15 +3,8 @@ from http import HTTPStatus
 from pathlib import Path
 from typing import Annotated, Literal, Optional
 
-from fastapi import (
-    APIRouter,
-    FastAPI,
-    Form,
-    HTTPException,
-    Request,
-    Response,
-    UploadFile,
-)
+from fastapi import APIRouter, FastAPI, Form, HTTPException, Request, UploadFile
+from fastapi.responses import PlainTextResponse
 from typing_extensions import TypeGuard
 
 from ..state import blob_storage_from_request
@@ -38,7 +31,7 @@ def register_file_storage_routes(app: FastAPI) -> None:
         request: Request,
         category: Annotated[Literal["ingridient", "glass", "coctail"], Form()],
         file: UploadFile,
-    ) -> str:
+    ) -> PlainTextResponse:
         file_name = file.filename
         if not _is_image(file_name):
             raise HTTPException(
@@ -48,6 +41,6 @@ def register_file_storage_routes(app: FastAPI) -> None:
 
         blob_storage = blob_storage_from_request(request)
         url = await blob_storage.upload(category, file_name, await file.read())
-        return Response(content=str(url), media_type="text/plain")
+        return PlainTextResponse(content=str(url))
 
     app.include_router(router)
