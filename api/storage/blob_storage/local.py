@@ -4,12 +4,13 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Optional
 
+from typing_extensions import override
 from yarl import URL
 
-from .base import BlobStorage
+from .base import BlobStorage, BlobStorageError
 
 
-class LocalBlobStorageError(Exception):
+class LocalBlobStorageError(BlobStorageError):
     pass
 
 
@@ -24,6 +25,7 @@ class LocalBlobStorage(BlobStorage):
 
         self._root_folder = root_folder
 
+    @override
     async def upload(self, folder: str, file_name: str, data: bytes) -> URL:
         file_dir = self._root_folder / folder
         if not file_dir.exists():
