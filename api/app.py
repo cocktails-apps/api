@@ -13,9 +13,14 @@ from .routes import (
 )
 
 debug = os.environ.get("DEBUG", "0").lower() != "0"
+
 configure_logger(debug)
 
-app = FastAPI(debug=debug)
+app = FastAPI(
+    debug=debug,
+    docs_url="/docs" if debug else None,
+    redoc_url="/redoc" if debug else None,
+)
 
 register_cors_middleware(app)
 
