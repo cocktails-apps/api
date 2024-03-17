@@ -4,11 +4,10 @@ from http import HTTPStatus
 from pathlib import Path
 from typing import Annotated, Literal, Optional
 
-import httpx
-from fastapi import APIRouter, FastAPI, Form, HTTPException, UploadFile
+from fastapi import APIRouter, FastAPI, Form, HTTPException, Request, UploadFile
 from typing_extensions import TypeGuard
 
-from ..clients.vercel import BlobUploadResult, blob_upload
+from ..state import blob_storage_from_request
 
 CACHE_CONTROL_MAX_AGE = timedelta(minutes=3)
 
@@ -31,23 +30,19 @@ def register_file_storage_routes(app: FastAPI) -> None:
 
     @router.post("/")
     async def upload(
+        request: Request,
         category: Annotated[Literal["ingridient", "glass", "coctail"], Form()],
         file: UploadFile,
-    ) -> BlobUploadResult:
-        async with httpx.AsyncClient() as client:
-            file_name = file.filename
-            if not _is_image(file_name):
-                raise HTTPException(
-                    status_code=HTTPStatus.UNPROCESSABLE_ENTITY,
-                    detail="File is not an image",
-                )
-
-            return await blob_upload(
-                client,
-                category,
-                file_name,
-                await file.read(),
-                cache_control_max_age=CACHE_CONTROL_MAX_AGE,
+    ) -> str:
+        file_name = file.filename
+        if not _is_image(file_name):
+            raise HTTPException(
+                status_code=HTTPStatus.UNPROCESSABLE_ENTITY,
+                detail="File is not an image",
             )
+
+        blob_storage = blob_storage_from_request(request)
+        url = await blob_storage.upload(category, file_name, await file.read())
+        return url.human_repr()
 
     app.include_router(router)
