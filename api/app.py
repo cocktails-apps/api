@@ -12,7 +12,7 @@ from .routes import (
     register_ingridients_routes,
 )
 
-debug = os.environ.get("DEBUG", "false").lower() == "true"
+debug = os.environ.get("DEBUG", "0").lower() != "0"
 configure_logger(debug)
 
 app = FastAPI(debug=debug)
