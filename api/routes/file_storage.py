@@ -1,15 +1,20 @@
 import mimetypes
-from datetime import timedelta
 from http import HTTPStatus
 from pathlib import Path
 from typing import Annotated, Literal, Optional
 
-from fastapi import APIRouter, FastAPI, Form, HTTPException, Request, UploadFile
+from fastapi import (
+    APIRouter,
+    FastAPI,
+    Form,
+    HTTPException,
+    Request,
+    Response,
+    UploadFile,
+)
 from typing_extensions import TypeGuard
 
 from ..state import blob_storage_from_request
-
-CACHE_CONTROL_MAX_AGE = timedelta(minutes=3)
 
 
 def _is_image(file_name: Optional[str]) -> TypeGuard[str]:
@@ -43,6 +48,6 @@ def register_file_storage_routes(app: FastAPI) -> None:
 
         blob_storage = blob_storage_from_request(request)
         url = await blob_storage.upload(category, file_name, await file.read())
-        return url.human_repr()
+        return Response(content=str(url), media_type="text/plain")
 
     app.include_router(router)

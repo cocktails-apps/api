@@ -1,29 +1,31 @@
 from typing import Optional
-from unittest.mock import AsyncMock, patch
+from unittest.mock import create_autospec, patch
 
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from yarl import URL
 
-from ..clients.vercel import BlobUploadResult
-from ..clients.vercel import blob_upload as blob_upload_orig
+from ..state import blob_storage_from_request
+from ..storage import BlobStorage
 from .file_storage import _is_image, register_file_storage_routes
+
+
+@pytest.fixture
+def blob_storage() -> BlobStorage:
+    res = create_autospec(BlobStorage, spec_set=True, instance=True)
+    with patch(
+        "api.routes.file_storage.blob_storage_from_request",
+        spec_set=blob_storage_from_request,
+        return_value=res,
+    ):
+        yield res
 
 
 @pytest.fixture
 def app(app: FastAPI) -> FastAPI:
     register_file_storage_routes(app)
     return app
-
-
-@pytest.fixture
-def blob_upload() -> AsyncMock:
-    with patch(
-        "api.routes.file_storage.blob_upload",
-        spec_set=blob_upload_orig,
-        return_value=BlobUploadResult(url="https://some.url"),
-    ) as m:
-        yield m
 
 
 @pytest.mark.parametrize(
@@ -39,15 +41,17 @@ def test_is_image(file_name: Optional[str], expected: bool) -> None:
     assert _is_image(file_name) is expected
 
 
-async def test_upload(client: TestClient, blob_upload: AsyncMock) -> None:
+async def test_upload(client: TestClient, blob_storage: BlobStorage) -> None:
+    blob_storage.upload.return_value = URL("https://some.url/ingridient/file.png")
+
     resp = client.post(
         "/files",
         data={"category": "ingridient"},
         files={"file": ("file.png", b"some data")},
     )
 
-    assert resp.json() == {"url": "https://some.url/"}
-    blob_upload.assert_awaited_once()
+    assert resp.text == "https://some.url/ingridient/file.png"
+    blob_storage.upload.assert_awaited_once()
 
 
 async def test_upload_not_image_fail(client: TestClient) -> None:
