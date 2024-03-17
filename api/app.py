@@ -3,7 +3,7 @@ import os
 from fastapi import FastAPI
 
 from .log import configure_logger
-from .middleware import register_cors_middleware
+from .middleware import register_cors_middleware, register_state_middleware
 from .routes import (
     register_coctails_routes,
     register_file_storage_routes,
@@ -11,7 +11,6 @@ from .routes import (
     register_info_routes,
     register_ingridients_routes,
 )
-from .state import lifespan
 
 debug = os.environ.get("DEBUG", "0").lower() != "0"
 
@@ -22,7 +21,6 @@ app = FastAPI(
     debug=debug,
     docs_url="/docs" if debug else None,
     redoc_url="/redoc" if debug else None,
-    lifespan=lifespan,
 )
 
 register_cors_middleware(app)
@@ -32,3 +30,4 @@ register_coctails_routes(app)
 register_glasses_routes(app)
 register_ingridients_routes(app)
 register_file_storage_routes(app)
+register_state_middleware(app)

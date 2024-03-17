@@ -7,7 +7,7 @@ from fastapi import APIRouter, FastAPI, Form, HTTPException, Request, UploadFile
 from fastapi.responses import PlainTextResponse
 from typing_extensions import TypeGuard
 
-from ..state import blob_storage_from_request
+from ..middleware import blob_storage_from_request
 
 
 def _is_image(file_name: Optional[str]) -> TypeGuard[str]:

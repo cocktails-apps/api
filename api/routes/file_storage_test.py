@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from yarl import URL
 
-from ..state import blob_storage_from_request
+from ..middleware import blob_storage_from_request
 from ..storage import BlobStorage
 from .file_storage import _is_image, register_file_storage_routes
 
