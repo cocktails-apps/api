@@ -12,7 +12,8 @@
       "module": "uvicorn",
       "args": ["api.app:app", "--reload"],
       "env": {
-        "USE_MONGOMOCK": "1"
+        "USE_MONGOMOCK": "1",
+        "DEBUG": "1"
       }
     }
   ]
