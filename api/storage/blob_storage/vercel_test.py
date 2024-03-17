@@ -22,7 +22,7 @@ def mock_blob_upload() -> Iterable[MagicMock]:
 
 @pytest.fixture
 def sut(client: httpx.AsyncClient) -> VercelBlobStorage:
-    return VercelBlobStorage(client=client)
+    return VercelBlobStorage(client=client, folder_prefix="test")
 
 
 async def test_upload(sut: VercelBlobStorage, mock_blob_upload: MagicMock):
@@ -35,7 +35,9 @@ async def test_upload(sut: VercelBlobStorage, mock_blob_upload: MagicMock):
     result = await sut.upload(folder, file_name, data)
 
     assert result == URL("https://example.com")
-    mock_blob_upload.assert_called_once_with(sut._client, folder, file_name, data)
+    mock_blob_upload.assert_called_once_with(
+        sut._client, f"test-{folder}", file_name, data
+    )
 
 
 async def test_upload_failure(sut: VercelBlobStorage, mock_blob_upload: MagicMock):
@@ -48,4 +50,6 @@ async def test_upload_failure(sut: VercelBlobStorage, mock_blob_upload: MagicMoc
     with pytest.raises(VercelBlobStorageError, match="failed to upload file"):
         await sut.upload(folder, file_name, data)
 
-    mock_blob_upload.assert_called_once_with(sut._client, folder, file_name, data)
+    mock_blob_upload.assert_called_once_with(
+        sut._client, f"test-{folder}", file_name, data
+    )

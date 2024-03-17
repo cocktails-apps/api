@@ -1,4 +1,4 @@
-from .blob_storage import BlobStorage, local_blob_storage
+from .blob_storage import BlobStorage, local_blob_storage, vercel_blob_storage
 from .client import get_client, is_connected
 from .coctails_storage import CoctailId, CoctailPartialWithoutId
 from .commons import DocumentNotFound
@@ -23,4 +23,5 @@ __all__ = [
     "get_storage",
     "is_connected",
     "local_blob_storage",
+    "vercel_blob_storage",
 ]
